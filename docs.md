@@ -8,7 +8,7 @@ further work needed for the project. We came up with a list of tasks that needed
 like a cliff, with read depth tapering off as you move from right to left through the curve. This will help us to see 
 which samples need fixing.
 
-* Run maker annotation with the original genome. Will need to look into how the origional genome was annotated. For
+* Run maker annotation with the original genome. Will need to look into how the original genome was annotated. For
 help with maker, I can ask Tessa. She has lot's of experience with it.
 
 * Call presence/absence annotation. This can be done in parallel to maker.
@@ -70,7 +70,7 @@ the lowest mapping rate of the 34 samples at 93.14 %, with a mean alignment perc
 All samples seemed to have a good read count, with the lowest sample scoring 127M total reads and an average of around
 200M reads.
 
-### Analysis of SGSGeneLoss results.
+## Analysis of SGSGeneLoss results (07/07/2025) - ().
 I ran SGSGeneloss on the merged bam files and ran the outputs through this [script](scripts/sgsgeneloss/merge_excovs.py)
 to merge the excov files for each sample. I then generated a report using the output files using this
 [script](scripts/sgsgeneloss/plot_stats.py) the final report for this run of the SGSGeneLoss can be viewed
@@ -78,6 +78,92 @@ to merge the excov files for each sample. I then generated a report using the ou
 
 The initial SGSGeneloss results were promising, and after confirming with Dave and Mitch we agreed that all the 
 samples in the cohort contain suitable read depth/coverage to provide accurate presence/absence variation results.
+
+### Clustering of samples.
+The initial PCA results of the PAV matrix during the generation of the report above showed that there seems to be some
+expected clustering of samples. I spent some time into looking into what would be the best method of comparing
+clustering results for this dataset (binary). And decided to replace the PCA plot with a UMAP plot to look at sample
+clustering.
+
+The figure below shows UMAP analysis of the 34 sample PAV data, with dots colored according to the island the samples 
+were taken from:
+
+![UMAP Plot of PAV matrix.](plots/sgsgeneloss/pav_island_umap.png)
+
+The plot shows some rough clustering between samples from different islands, although there are some samples from
+those islands that do not cluster well. It would be good to plot the islands in the Galapagos so that I can provide some
+more context to the clusters that are generated.
+
+## Functional annotation (09/07/2025) - ().
+In order to provide a more informative analysis of which genes are retained/lost in each sample. I need to add 
+additional annotation to the maker-generated gff3 annotation file used to run SGSGeneloss. In order to provide 
+additional functional annotation, I extracted CDS and protein sequences (as fasta files) 
+of each feature in the gff3 file using the `gffread` package. 
+
+I then used the `diamond/2.1.12` to do an initial screen of the fasta files for high quality hits against the
+uniprot database. In order to output a file that contained taxonomy information, I needed to provide some additional
+files to the diamond database build. I followed the instructions 
+[here](https://github.com/bbuchfink/diamond/wiki/3.-Command-line-options) in order to build that database using a
+file to map protein accessions to taxonomy accessions.
+
+(Protein -> Taxonomy) mapping file:
+`wget https://ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/accession2taxid/prot.accession2taxid.FULL.gz` 
+
+Taxon information for the database was obtained using:
+`wget ftp://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz`. The database was built using the following bash command
+
+Then with `diamond`:
+```bash
+diamond makedb \
+  --in uniprot_sprot.fasta \
+  --db uniprot_sprot \
+  --taxonmap prot.accession2taxid.FULL \
+  --taxonnodes nodes.dmp
+  --taxonnames names.dmp
+```
+
+Before running the blast command I ran [this](/scripts/functional_annotation/clean_proteins.py) script on the gffreads 
+`protein.fa` output file to clean the sequences and make sure any invalid characters were removed from the dataset
+passed in to diamond. 
+
+Finally, I ran this code to run a `blastp` search against the uniprot_sprot diamond database generated above using this
+script: [this](/scripts/functional_annotation/diamond_blast.sh) script. To generate the output file: `diamond_results_protein.tsv`. That was transferred to my local
+PC for data analysis.
+
+Before continuing the analysis I wanted to get a good idea of the number of proteins that had significant blast hits.
+[this]() python file was used to generate some statistics for the functional annotation results of the initial diamond
+blast hits.
+
+Here are some summary statistics for the initial diamond results:
+* Diamond results contained blastp results for 36070 features (out of a total of 43093 in the original gff file).
+* All 36070 queries were unique.
+* Diamond hits by "identity" are normally distributed around the 60% sequence similarity. 
+* Majority of top blast hits for the gff3 file against uniprot_sprot database were from plant kingdom "Viridiplantae".
+* 23506/43093 features in the gff3 file returned a top hit against "Arabidopsis".
+
+### Getting GO terms for each gene.
+I cannot retrieve GO terms directly from the diamond blastp , but I can screen the protein ID's against uniprot to
+obtain a list of GO terms. 
+
+In order to apply a computationally efficient approach I downloaded the Uniprot GO term mapping file to Setonix using:
+``
+
+I then created a list of accessions_id's from the output of the `diamond blastp` file:
+[diamond_results.tsv](/data/functional_annotation/diamond_results_protein.tsv). Using the command:
+`cut -f2 diamond_results.tsv | cut -d'|' -f2 | sort -u > accessions.txt`
+
+Finally, I used `zgrep` to pull out the GO annotation data for each of the accessions generated in `accessions.txt` using
+the command: 
+`zgrep -Ff accessions.txt idmapping.dat.gz | awk '$2 == "GO" || $2 == "KEGG" || $2 == "Pfam"' > filtered_annotations.tsv`
+
+
+
+
+
+
+
+
+
 
 
 
