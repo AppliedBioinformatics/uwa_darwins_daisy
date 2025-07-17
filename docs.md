@@ -91,10 +91,12 @@ were taken from:
 ![UMAP Plot of PAV matrix.](plots/sgsgeneloss/pav_island_umap.png)
 
 The plot shows some rough clustering between samples from different islands, although there are some samples from
-those islands that do not cluster well. It would be good to plot the islands in the Galapagos so that I can provide some
-more context to the clusters that are generated.
+those islands that do not cluster well. I also generated a plot that maps the sample longitude and latitude to thier
+co-ordinates around the Galápagos Islands themselves. Here is the plot:
 
-## Functional annotation (09/07/2025) - ().
+![Co-ordinate location of samples.](plots/sgsgeneloss/galapagos_map_with_samples.png)
+
+## Functional annotation (09/07/2025) - (11/07/2025).
 In order to provide a more informative analysis of which genes are retained/lost in each sample. I need to add 
 additional annotation to the maker-generated gff3 annotation file used to run SGSGeneloss. In order to provide 
 additional functional annotation, I extracted CDS and protein sequences (as fasta files) 
@@ -118,10 +120,9 @@ diamond makedb \
   --in uniprot_sprot.fasta \
   --db uniprot_sprot \
   --taxonmap prot.accession2taxid.FULL \
-  --taxonnodes nodes.dmp
+  --taxonnodes nodes.dmp \
   --taxonnames names.dmp
 ```
-
 Before running the blast command I ran [this](/scripts/functional_annotation/clean_proteins.py) script on the gffreads 
 `protein.fa` output file to clean the sequences and make sure any invalid characters were removed from the dataset
 passed in to diamond. 
@@ -131,8 +132,8 @@ script: [this](/scripts/functional_annotation/diamond_blast.sh) script. To gener
 PC for data analysis.
 
 Before continuing the analysis I wanted to get a good idea of the number of proteins that had significant blast hits.
-[this]() python file was used to generate some statistics for the functional annotation results of the initial diamond
-blast hits.
+[this](/scripts/functional_annotation/annotation_analysis.py) python file was used to generate some statistics for 
+the functional annotation results of the initial diamond blast hits.
 
 Here are some summary statistics for the initial diamond results:
 * Diamond results contained blastp results for 36070 features (out of a total of 43093 in the original gff file).
@@ -141,29 +142,91 @@ Here are some summary statistics for the initial diamond results:
 * Majority of top blast hits for the gff3 file against uniprot_sprot database were from plant kingdom "Viridiplantae".
 * 23506/43093 features in the gff3 file returned a top hit against "Arabidopsis".
 
-### Getting GO terms for each gene.
+### Getting GO terms for each gene (11/07/2025) - (14/07/2025).
 I cannot retrieve GO terms directly from the diamond blastp , but I can screen the protein ID's against uniprot to
 obtain a list of GO terms. 
 
 In order to apply a computationally efficient approach I downloaded the Uniprot GO term mapping file to Setonix using:
-``
+`https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz`
 
-I then created a list of accessions_id's from the output of the `diamond blastp` file:
+I then created a list of unique accession_id's from the output of the `diamond blastp` file:
 [diamond_results.tsv](/data/functional_annotation/diamond_results_protein.tsv). Using the command:
 `cut -f2 diamond_results.tsv | cut -d'|' -f2 | sort -u > accessions.txt`
 
-Finally, I used `zgrep` to pull out the GO annotation data for each of the accessions generated in `accessions.txt` using
-the command: 
-`zgrep -Ff accessions.txt idmapping.dat.gz | awk '$2 == "GO" || $2 == "KEGG" || $2 == "Pfam"' > filtered_annotations.tsv`
+Finally, I used `gunzip`'d the mapping file and then screened it for the unique accessions created above using the
+command: 
+```bash
+awk -F'\t' '
+  NR==FNR {acc[$1]; next}
+  ($1 in acc) && $7 != "" {
+    go[$1] = go[$1] ? go[$1]";"$7 : $7
+  }
+  END {
+    for (id in acc) {
+      print id "\t" (go[id] ? go[id] : "NA")
+    }
+  }
+' accessions.txt idmapping_selected.tab > go_mapping.tsv
+```
+The above command will read all accessions from `accessions.txt`, extract all the GO terms for those accessions,
+group multiple GO terms per accession as separated by a semicolon, ensures that every accession from the list appears
+in the output with "NA" if no GO terms are found.
 
+Finally, I confirmed that both files had the same number of lines with `wc -l`. This check confirmed that out of the
+43093 structural features identified in the gff file, 11771 were mapped to GO-terms using the top blastp hit via
+`diamond blastp`.
 
+I merged the file containing the GO terms and accessions to my diamond blast file using an inner join and the 
+Python script [here](/scripts/functional_annotation/merge_go_terms.py). I wrote the output of this file to
+[here](/data/functional_annotation/go_merged_diamond_results_uniprot.tsv).
 
+I will use this file to do some GO enrichment analysis using the Go terms from uniprot as well as the presence/absence
+variation matrix [here](/data/sgsgeneloss/pav_matrix.csv)
 
+## Go enrichment analysis (14/07/2025) - (15/07/2025):
+First of all I thought it would be a good idea to get an overview of which Go terms are most common in my dataset,
+this will allow me to establish a functional landscape and give a broad overview of which go terms are most 
+represented by the hits.
 
+[This](/scripts/functional_annotation/analyse_go_terms.py) Python script was used to generate all go-term related 
+analysis. It also contains the code used to generate a human-readable GO-id : Go-term readable file, that provides a 
+human-readable mapping of each go-id that can be used to make any subqequent figures more readable. The input file for 
+this was obtained from this link: `https://geneontology.org/docs/download-ontology/`. The `go-basic.obo` was downloaded
+and parsed with python to create the mapping file.
 
+I generated two plots to get a general overview of the top GO terms overall, and by namespace within the overall 
+dataset (all 11771 hits). These plots are shown below:
 
+![Top GO ID's by frequency (all hits).](/plots/functional_annotation/diamond_hits_all_most_freq_go_terms.png)
+![Top GO ID's by namespace (all hits.)](/plots/functional_annotation/diamond_hits_all_most_freq_go_terms_by_namespace.png)
 
+I then filtered the Go-annotated diamond blastp results dataframe into two groups:
 
+1) `Core` hits - Out of 41105 core genes/features in the pav dataframe, I was able to generate hits for 34562
+2) `Non-core` hits - Out of 1988, I was able to generate hits for 1508.
 
+These hits were generated using the uniprot-sprot database, cross-referenced with associated GO terms. I then reran 
+top GO-terms by count for the `core` and `non-core` gene list. The results are shown below:
 
+Background dataset (all-genes):
+![Background dataset - Top Go terms by count.](/plots/functional_annotation/diamond_hits_all_most_freq_go_terms.png)
+
+Core genes (Genes marked present in all samples.)
+![Core gene set.](/plots/functional_annotation/diamond_hits_core_most_freq_go_terms.png)
+
+Non-core genes (genes marked as absent in at least one sample).
+![Non-core gene set.](/plots/functional_annotation/diamond_hits_noncore_most_freq_go_terms.png)
+
+The results above give a good indication as to the results we might expect to see through a gene enrichment analysis.
+I will run a gene enrichment analysis using the `goatools` python package, which i was able to install with conda on
+my local pc. The script use to run the GO enrichment analysis is [here](/scripts/functional_annotation/go_enrichment.py)
+
+## Running masurca on unmapped reads (16/07/2025) -().
+Masurca prefers untrimmed reads for the assembly. In order to collect these I had to download the raw .fastqz files from
+`pshell` and merge them by sample using this [script](). Once I had merged the reads, I then extracted the untrimmed
+versions of the unmapped reads using this [script](). 
+
+I estimated the average insert size and STDEV of a few samples using `bbmap merge` to give the following results:
+
+Finally, I used this [script]() to run the masurca assembly. 
 
