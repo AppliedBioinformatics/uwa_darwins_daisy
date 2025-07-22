@@ -1,5 +1,7 @@
 # Darwin's Daisy Project, Taken over from Gagan 20/06/2025.
-## Inital handover notes.
+
+---
+## Initial handover notes.
 
 I met with Dave, A few of the postdocs and Gagan to discuss handover of the project on the 20/06/2025. To discuss the 
 further work needed for the project. We came up with a list of tasks that needed doing. These are listed below:
@@ -8,8 +10,8 @@ further work needed for the project. We came up with a list of tasks that needed
 like a cliff, with read depth tapering off as you move from right to left through the curve. This will help us to see 
 which samples need fixing.
 
-* Run maker annotation with the original genome. Will need to look into how the original genome was annotated. For
-help with maker, I can ask Tessa. She has lot's of experience with it.
+* Run masurca annotation with the original genome. Will need to look into how the original genome was annotated. For
+help with maker, I can ask Tessa. She has lots of experience with it.
 
 * Call presence/absence annotation. This can be done in parallel to maker.
 * Gene ontology analysis.
@@ -22,7 +24,7 @@ moving forward.
 I downloaded the multiqc report Gagan generated to look over and see if it could explain why some samples are showing
 a large amount of gene loss. The multiqc report is [here](reports/initial_multiqc_report.html). The report showed that
 despite passing quality thresholds, the number of total reads for some samples were very low, this means that the
-depth of coverage of the genomes for these samples may not be good enough to cover all of the present genes and hence 
+depth of coverage of the genomes for these samples may not be good enough to cover all the present genes and hence 
 would lead to the large loss of genes Gagan observed in her thesis. This was confirmed in the 
 [mapping report](reports/mapping_multiqc_report.html) that showed that all samples had a high rate of alignment but 
 likely do not have a good depth of coverage.
@@ -128,8 +130,8 @@ Before running the blast command I ran [this](/scripts/functional_annotation/cle
 passed in to diamond. 
 
 Finally, I ran this code to run a `blastp` search against the uniprot_sprot diamond database generated above using this
-script: [this](/scripts/functional_annotation/diamond_blast.sh) script. To generate the output file: `diamond_results_protein.tsv`. That was transferred to my local
-PC for data analysis.
+script: [this](/scripts/functional_annotation/diamond_blast.sh) script. To generate the output file: 
+`diamond_results_protein.tsv`. That was transferred to my local PC for data analysis.
 
 Before continuing the analysis I wanted to get a good idea of the number of proteins that had significant blast hits.
 [this](/scripts/functional_annotation/annotation_analysis.py) python file was used to generate some statistics for 
@@ -190,7 +192,7 @@ represented by the hits.
 
 [This](/scripts/functional_annotation/analyse_go_terms.py) Python script was used to generate all go-term related 
 analysis. It also contains the code used to generate a human-readable GO-id : Go-term readable file, that provides a 
-human-readable mapping of each go-id that can be used to make any subqequent figures more readable. The input file for 
+human-readable mapping of each go-id that can be used to make any subsequent figures more readable. The input file for 
 this was obtained from this link: `https://geneontology.org/docs/download-ontology/`. The `go-basic.obo` was downloaded
 and parsed with python to create the mapping file.
 
@@ -218,15 +220,87 @@ Non-core genes (genes marked as absent in at least one sample).
 ![Non-core gene set.](/plots/functional_annotation/diamond_hits_noncore_most_freq_go_terms.png)
 
 The results above give a good indication as to the results we might expect to see through a gene enrichment analysis.
-I will run a gene enrichment analysis using the `goatools` python package, which i was able to install with conda on
+I will run a gene enrichment analysis using the `goatools` python package, which I was able to install with conda on
 my local pc. The script use to run the GO enrichment analysis is [here](/scripts/functional_annotation/go_enrichment.py)
 
-## Running masurca on unmapped reads (16/07/2025) -().
+### Update 18/07/2025 - 22/07/2025.
+After Discussing with Dave, I will have a more thorough look into absent genes that are associated with the 
+terpenoid pathway. The number 1 scoring go term in the non-core gene lists. This 
+[script](/scripts/functional_annotation/filter_by_go.py) was used to complete that analysis. Taking these results,
+I also completed a small review to assess future directions that we could take the project. This work is located
+[here](/reports/sgsgeneloss_gene_analysis.docx)
+
+## Running masurca on unmapped reads (16/07/2025) -(21/07/2025).
 Masurca prefers untrimmed reads for the assembly. In order to collect these I had to download the raw .fastqz files from
-`pshell` and merge them by sample using this [script](). Once I had merged the reads, I then extracted the untrimmed
-versions of the unmapped reads using this [script](). 
+`pshell` and merge them by sample using this [script](/scripts/masurca/merge_daisy_raws_fastq.sh). Once I had merged the
+reads, I then extracted the untrimmed versions of the unmapped reads using this 
+[script](scripts/masurca/extract_unmapped.sh) to retrieve the untrimmed version of the unmapped reads from the raw
+fastq files. The unmapped_untrimmed reads were uploaded to pshell at the directory:
+`NGS Analysis Results/rawdata/Darwins Daisy/untrimmed_unmapped_fastqs_jb`
 
 I estimated the average insert size and STDEV of a few samples using `bbmap merge` to give the following results:
 
-Finally, I used this [script]() to run the masurca assembly. 
+* AVG insert size: 231
+* AVG insert STDEV: 33.2
+
+Finally, I used this [script](/scripts/masurca/run_masurca.sh) to run the masurca assembly. With the maximum single 
+`work` node allocation of 128CPUS and 230GB mem. This run failed so I reran using the `highmem` partition, reduced the 
+number of cpu's down to 64 and upped the memory requirements to 300GB. This run completed. I copied the masurca output 
+files to `pshell` at the following directory:
+
+`NGS Analysis Results/rawdata/Darwins_daisy/masurca_output_jb`
+
+I used the `quast` programme, installed via `conda` to analyse the results of the _de novo_ alignment. The results are
+stored [here](/reports/masurca_quast_report.html).
+
+Here are some summaries of the initial alignment:
+
+* Number of contigs: 171908
+* Contigs over 1000BP: 83859
+* Contigs over 5000BP: 9357
+* Contigs over 10000BP: 1212
+
+### Masurca run quality control (22/07/2025).
+I sent the masurca report to Mitch and Dave and we agreed the overall number of contigs is high. I am going to run
+a filter for mitochondrial and chloroplast DNA on the assembly to assess and filter how many contigs likely belong to
+organelles and then can move on to look for other contamination, such as bacteria.
+
+In order to see which contigs belong to mito/chloroplasts I will run a `blastn` search against mitochondria and 
+chloroplast complete genomes from the following NCBI accessions for the common sunflower:
+
+* NC_007977.1 (chloroplast).
+* NC_023337.1 (mitochondria).
+
+The following code shows the process used to remove contigs that were flagged as mitochondrial/chloroplast DNA from the
+primary masurca scaffold using blastn and entrez-direct packages:
+
+```bash
+efetch -db nucleotide -d <ID> -format fasta > <NCBI_reference>.fasta
+makeblastdb -in <NCBI_reference>.fasta -dbtype nucl -out <NCBI_reference>_db
+blastn -query <masurca_assembly>.fasta -db <NCBI_reference>_db \
+       -outfmt '6 qseqid sseqid pident length evalue bitscore' \
+       -evalue 1e-10 \
+       -out <hits>.tsv \
+       -num_threads 16
+```
+
+Once I had generated blast databases for both NCBI accessions. I then ran the following code to create a list of
+unique hits using the two .tsv files to create a file: <all_organelle_hits>. Then used seqtk `grep` to remove these hits
+from the original masurca assembly.
+
+```bash
+cat <hits1?.tsv> <hits2.tsv> | sort | uniq > organelle_contigs.txt
+seqkit grep organelle_contigs.tsv primary_masurca_assembly.fasta > filtered_masurca_assembly.fasta
+
+# A few checks to make sure that the primary masurca fasta file was actually filtered.
+grep -c primary_masurca_assembly.fasta
+grep -c filtered_masurca_assembly.fasta
+```
+### Checking species/kingdom of remaining masurca contigs.
+The mitochondrial/chloroplast filtering step identified 
+
+As a next step, I ran a `blastn` search for the filtered_masurca_assembly.fasta file against the broad NCBI database to
+return the top hit for each contig. I used parameters to return taxonomy information so that I can assess whether the 
+remaining contigs are plant DNA or whether there is any other contamination in the dataset.
+
 

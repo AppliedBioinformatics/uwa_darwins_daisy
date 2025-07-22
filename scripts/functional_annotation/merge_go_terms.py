@@ -3,6 +3,7 @@ import pandas as pd
 from pathlib import Path
 from annotation_analysis import DIAMOND_TSV_HEADERS
 import csv
+
 # Data dir
 data_dir = Path("../../data/functional_annotation")
 
