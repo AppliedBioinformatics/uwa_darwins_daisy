@@ -1,0 +1,46 @@
+#!/bin/bash
+#SBATCH --job-name=minimap2_align
+#SBATCH --partition=work           # Adjust partition/queue as needed
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=64         # Use 32 threads (adjust as needed)
+#SBATCH --mem=64G                  # Memory requirement (adjust as needed)
+#SBATCH --time=24:00:00            # Max walltime (adjust as needed)
+#SBATCH --output=minimap2_%j.out
+#SBATCH --error=minimap2_%j.err
+
+# === User parameters: set these ===
+REFERENCE="scalesia_atractyloides.reference.fasta.gz"      # Reference genome (FASTA)
+QUERY="filtered.genome.scf.fasta"              # Input reads (FASTQ or FASTA)
+OUTPUT="raw_pangenome.bam"        	       # Output BAM file
+PRESET="map-ont"                      	       # Preset: map-ont (ONT), map-pb (PacBio), asm5, asm10, etc.
+EXTRA_OPTS=""                         	       # Any extra minimap2 options
+STATS="alignment.stats.txt"    		       # Alignment statistics output file
+UNMAPPED="unmapped_reads.fasta"   	       # Output file for unmapped reads
+
+# Set these variables for conda paths.
+source /software/projects/pawsey0149/jbruton/miniconda3/etc/profile.d/conda.sh
+conda activate /software/projects/pawsey0149/jbruton/miniconda3/envs/biogenerics
+
+# === Print these parameters ===
+echo "Starting minimap2 job at $(date)"
+echo "Reference: ${REFERENCE}"
+echo "Query: ${QUERY}"
+echo "Output: ${OUTPUT}"
+echo "Threads: $SLURM_CPUS_PER_TASK"
+echo "Preset: ${PRESET}"
+echo "Extra options: ${EXTRA_OPTS}"
+
+# Run minimap2 and output SAM, then convert to sorted BAM
+minimap2 -a -t $SLURM_CPUS_PER_TASK -x ${PRESET} ${EXTRA_OPTS} ${REFERENCE} ${QUERY} \
+  2> ${STATS} | \
+  samtools view -@ $SLURM_CPUS_PER_TASK -b - | \
+  samtools sort -@ $SLURM_CPUS_PER_TASK -o ${OUTPUT}
+
+# Index the BAM file (optional, but recommended)
+samtools index ${OUTPUT}
+
+# Extract unmapped reads to FASTQ
+samtools fastq -f 4 ${OUTPUT} > ${UNMAPPED}
+
+echo "Finished minimap2 job at $(date)"

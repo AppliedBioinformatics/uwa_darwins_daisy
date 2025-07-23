@@ -1,0 +1,75 @@
+#!/bin/bash
+#SBATCH --job-name=blastn_array
+#SBATCH --partition=work
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=48
+#SBATCH --mem=128G
+#SBATCH --time=24:00:00
+#SBATCH --array=1-100
+#SBATCH --output=blastn_array_%A_%a.out
+#SBATCH --error=blastn_array_%A_%a.err
+
+# === User parameters: set these ===
+BLASTDB="/scratch/pawsey0149/blast_db/core_nt"
+QUERY="unmapped_reads.fasta"
+SPLIT_DIR="split_fasta"
+OUTDIR="blastn_results"
+FINAL_OUT="blastn_array_final.tsv"
+BLAST_TASK="blastn"
+
+# Set up conda environment
+source /software/projects/pawsey0149/jbruton/miniconda3/etc/profile.d/conda.sh
+conda activate /software/projects/pawsey0149/jbruton/miniconda3/envs/blastn
+
+echo "SLURM_ARRAY_TASK_ID: $SLURM_ARRAY_TASK_ID"
+
+# Only the first array job splits the FASTA
+if [ $SLURM_ARRAY_TASK_ID -eq 1 ]; then
+    echo "Splitting $QUERY into 5 parts with seqkit..."
+    mkdir -p "$SPLIT_DIR"
+    seqkit split2 -p 100 "$QUERY" -O "$SPLIT_DIR"
+    echo "Splitting complete."
+fi
+
+# Define the expected split file for this array task
+BASENAME=$(basename "$QUERY" .fasta)
+SPLIT_FILE="$SPLIT_DIR/${BASENAME}.part_$(printf "%03d" $SLURM_ARRAY_TASK_ID).fasta"
+
+# Wait for splitting to finish (all jobs wait for split files)
+MAX_WAIT=60  # 1 minute
+WAIT=0
+echo "Waiting for split file $SPLIT_FILE..."
+while [ ! -f "$SPLIT_FILE" ] && [ $WAIT -lt $MAX_WAIT ]; do
+    sleep 5
+    WAIT=$((WAIT+5))
+done
+
+if [ ! -f "$SPLIT_FILE" ]; then
+    echo "ERROR: Split file $SPLIT_FILE not found after 1 minute. Exiting."
+    exit 1
+fi
+
+echo "Split file $SPLIT_FILE found. Proceeding with BLASTN."
+
+mkdir -p "$OUTDIR"
+OUTFILE="$OUTDIR/blastn_part_$(printf "%03d" $SLURM_ARRAY_TASK_ID).tsv"
+
+echo "Running BLASTN on $SPLIT_FILE..."
+stdbuf -oL blastn -task ${BLAST_TASK} \
+    -db ${BLASTDB}/core_nt \
+    -num_threads $SLURM_CPUS_PER_TASK \
+    -query "$SPLIT_FILE" \
+    -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore staxids sscinames scomnames sblastnames skingdoms sskingdoms" \
+    -max_target_seqs 1 \
+    -evalue 1e-5 \
+    -out "$OUTFILE"
+
+if [ $? -eq 0 ]; then
+    echo "BLASTN completed successfully for $SPLIT_FILE. Output: $OUTFILE"
+else
+    echo "BLASTN failed for $SPLIT_FILE."
+    exit 2
+fi
+
+echo "Array task $SLURM_ARRAY_TASK_ID finished at $(date)"
