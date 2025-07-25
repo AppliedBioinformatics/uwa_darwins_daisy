@@ -1,26 +1,39 @@
 # Darwin's Daisy Project, Taken over from Gagan 20/06/2025.
 
 ---
-## Initial handover notes.
 
+## Index.
+- [Initial handover notes](#initial-handover-notes-25062025)
+- [Assessing initial quality of fastq samples](#assessing-quality-of-fastq-samples-27062025)
+- [SGSGeneLoss run and read depth plot](#generating-present-genes-and-read-depth-plot-30062025)
+- [Analysis of SGSGeneLoss results](#analysis-of-sgsgeneloss-results-07072025)
+- [Functional annotation of GFF File](#functional-annotation-09072025---11072025)
+- [GO term linkage](#getting-go-terms-for-each-gene-11072025---14072025)
+- [GO enrichment analysis](#go-enrichment-analysis-14072025---15072025)
+- [Running masurca](#running-masurca-on-unmapped-reads-16072025--21072025)
+- [Masurca QC and filtering](#masurca-run-quality-control-22072025)
+- [Remapping of masurca assembly with minimap](#alignment-of-filtered-masurca-assembly-to-the-reference-genome-23072025)
+
+---
+
+## Initial handover notes (25/06/2025).
 I met with Dave, A few of the postdocs and Gagan to discuss handover of the project on the 20/06/2025. To discuss the 
 further work needed for the project. We came up with a list of tasks that needed doing. These are listed below:
 
+* Look for a multiqc report to check quality of each sample and ensure that we are confident with all samples before 
+moving forward as Gagan had some issues with read depth in her results' analysis.
 * Generate a plot showing number of genes called as "present" against read depth for each sample. The curve should look 
 like a cliff, with read depth tapering off as you move from right to left through the curve. This will help us to see 
 which samples need fixing.
-
+* Call presence/absence annotation with SGS gene loss.
 * Run masurca annotation with the original genome. Will need to look into how the original genome was annotated. For
-help with maker, I can ask Tessa. She has lots of experience with it.
-
-* Call presence/absence annotation. This can be done in parallel to maker.
-* Gene ontology analysis.
+help with maker, I can ask Tessa. She has lots of experience with it. This can be done in parallel to the sgs gene loss
+analysis.
+* Gene ontology analysis (after sgs gene loss results have been generated).
 * Map unmapped contigs back to the reference genome (the unmapped contigs have already been filtered). - Apparently 
 Teng can help me with this.
-* Look for a multiqc report to check quality of each sample and ensure that we are confident with all samples before 
-moving forward.
 
-## Assessing quality of samples.
+## Assessing quality of fastq samples (27/06/2025).
 I downloaded the multiqc report Gagan generated to look over and see if it could explain why some samples are showing
 a large amount of gene loss. The multiqc report is [here](reports/initial_multiqc_report.html). The report showed that
 despite passing quality thresholds, the number of total reads for some samples were very low, this means that the
@@ -32,14 +45,14 @@ likely do not have a good depth of coverage.
 To a suitable threshold for suitable depth, The read depth plot below will be informative. It may even be informative
 to show raw read count per sample against number of genes called as present.
 
-## Generating present genes / read depth plot.
+## Generating present genes and read depth plot (30/06/2025).
 Gagan's sorted .bam folder only contains 26 bam files. I am going to use the raw_bams to complete the merge, as 
 there should be 35 samples according to the [metadata](metadata/raw_sample_metadata.xlsx)
 
 To Generate the plot I will complete the following workflow:
 * Get read depth per .bam file using `samtools view -c -F 260 <sample>.bam`. This will get the number of mapped reads.
 * Count genes per .ba, using `featureCounts -a .gff -o counts.txt <sample>.bam`
-* Define "Present". I.e what threshold should determine if a gene is classed as present or not.
+* Define "Present". I.e. what threshold should determine if a gene is classed as present or not.
 * Combine results into a table with columns `sample`, `Mapped read count`, and `Genes present`.
 * Plot with Python.
 
@@ -63,7 +76,7 @@ the following:
 A singular chrs.csv file containing the chromosome order for each sample (will be the same for each sample). The
 directory contains 103 files in total.
 
-### Analysis of Alignment results.
+### Analysis of Alignment results (30/06/2025).
 Before checking the SGSGeneloss results, I ran [this](scripts/bam_stats/visualise_bam_stats.py) parser script to 
 summarise the alignment statistics. Due to the results Gagan had with her SGSGeneLoss run, I wanted to check that each
 sample had aligned with a high percentage. After analysis of the results I concluded that all samples looked good, with 
@@ -72,7 +85,7 @@ the lowest mapping rate of the 34 samples at 93.14 %, with a mean alignment perc
 All samples seemed to have a good read count, with the lowest sample scoring 127M total reads and an average of around
 200M reads.
 
-## Analysis of SGSGeneLoss results (07/07/2025) - ().
+## Analysis of SGSGeneLoss results (07/07/2025).
 I ran SGSGeneloss on the merged bam files and ran the outputs through this [script](scripts/sgsgeneloss/merge_excovs.py)
 to merge the excov files for each sample. I then generated a report using the output files using this
 [script](scripts/sgsgeneloss/plot_stats.py) the final report for this run of the SGSGeneLoss can be viewed
@@ -230,6 +243,21 @@ terpenoid pathway. The number 1 scoring go term in the non-core gene lists. This
 I also completed a small review to assess future directions that we could take the project. This work is located
 [here](/reports/sgsgeneloss_gene_analysis.docx)
 
+### Update 24/07/2025.
+After sending the report above to Dave we discussed a future directions for the gene loss analysis. I will outline these
+below:
+
+1) Find a non-island daisy relative to compare results to.
+2) Compare the extent of parthenolide loss between species.
+3) Compare the extent of parthenolide loss between islands.
+4) Map the gibberellin genes to a pathway to get a better understanding of what is going on. Is there any other genes 
+in the pathway that might be flagged as a different GO term that are showing gene loss?
+5) Compare gibberellin gene loss between species.
+6) Compare gibberellin gene loss between islands.
+
+In order to keep this report is a somewhat chronological order I will start a new section to document the 
+above analysis.
+
 ## Running masurca on unmapped reads (16/07/2025) -(21/07/2025).
 Masurca prefers untrimmed reads for the assembly. In order to collect these I had to download the raw .fastqz files from
 `pshell` and merge them by sample using this [script](/scripts/masurca/merge_daisy_raws_fastq.sh). Once I had merged the
@@ -260,7 +288,7 @@ Here are some summaries of the initial alignment:
 * Contigs over 5000BP: 9357
 * Contigs over 10000BP: 1212
 
-### Masurca run quality control (22/07/2025) - .
+### Masurca run quality control (22/07/2025).
 I sent the masurca report to Mitch and Dave and we agreed the overall number of contigs is high. I am going to run
 a filter for mitochondrial and chloroplast DNA on the assembly to assess and filter how many contigs likely belong to
 organelles and then can move on to look for other contamination, such as bacteria.
@@ -304,7 +332,7 @@ contigs that were filtered out from the masurca assembly under the same folder w
 `sunflower_organelle_contigs.txt` I also saved the fasta sequences as `sunflower_chloro.fast` and `sunflower_mito.fasta`
 under the same folder.
 
-## Alignment of Filtered masurca assembly to the reference genome (23/07/2025) -  
+## Alignment of Filtered masurca assembly to the reference genome (23/07/2025)
 The next step in the generation of the pan-genome involved remapping the filtered masurca assembly to the original
 _scalesia_ reference file. This can be downloaded from pshell here: 
 `NGS analysis results/rawdata/darwins daisies/REF_FILE/.fasta`.
@@ -334,4 +362,40 @@ Finally, I used this array [script](/scripts/masurca/run_blastn_array.slrm)
 and this code snippet (run after all jobs finished). To generate a `.tsv` file containing the top `blastn` hit for each
 unmapped contig. This was done to get an idea of whether the unmapped (novel) contigs still contained contamination,
 or whether the majority was still flagged as plant material.
+
+## Further Presence Absence Variation Analysis (24/07/2025).
+Dave has been interested in whether we can observe gene-loss over time, under the hypothesis that Darwin's daisy 
+originated on the Galápagos through a single original migration event. This seems to be the current accepted theory 
+with some papers hypothesising that this migration even occurred somewhere amongst the central islands.
+
+To test this theory I decided first to look at the non-core PAV matrix. I used this 
+[script](/scripts/go_enrichment/non_core_presence_v_distance.py) to calculate the distance in KM of each of the samples
+from the centre of the island "Santiago", one of the centre islands in the Galápagos. I then created a count matrix of
+total number of present genes for each sample and plotted this on the y-axis. Below shows the result:
+
+![Non-core gene presence v distance from Santiago](/plots/go_enrichment/ncore_presence_v_distance_frm_santiago.png)
+
+A linear regression analysis using these parameters showed no significant correlation between the number of genes and 
+the distance from santiago. However, a GLM (Poisson Model) showed that there was a very small negative correlation with
+a pvalue of 0.028 and R squared value of 0.132.
+
+In order to try and get a better understanding of the results I created a subset of the non-core genes by filtering the 
+PAV matrix removing any genes that were NOT associated with any of the 15 top most enriched GO terms for the non-core
+dataset. The results for this analysis are below:
+
+![Go Non-core gene subset](/plots/go_enrichment/ncore_15_enrch_go_v_distance_frm_santiago.png)
+
+Both a standard linear regression and GLM (Poisson Model) showed a significant negative correlation between distance 
+from Santiago and the number of genes belonging to the top 15 most enriched GO terms within the non-core dataset. I will
+need to interpret this result to try to explain why the subset shows a greater correllation compared to the whole 
+non-core gene set. Below are the results of the statistical tests for the non-core GO subset used to generate the 
+figure
+
+* Standard linear regression - p <0.001 , R squared = 0.43
+* Poisson Regression (GLM) - p = 0.036, R squared = 0.1215
+
+Possible explanations:
+* Founder effect - migrations island to island leads to decreased genetic diversity.
+* Non-core genes associated with GO terms may be less essential so could be lost in these bottlenecks.
+* Non-core genes may contain neutral genes. The go enriched subset may have a stronger selection pressure against them.
 

@@ -9,7 +9,6 @@ from pathlib import Path
 
 # Load data/metadata.
 pav_df = pd.read_csv("../../data/sgsgeneloss/pav_matrix.csv", index_col=0)
-print(pav_df.shape)
 meta_df = pd.read_excel("../../metadata/raw_sample_metadata.xlsx", index_col=0)
 
 # Do some formatting.
@@ -158,6 +157,69 @@ def plt_non_core_heatmap(pav_df: pd.DataFrame, meta_df: pd.DataFrame, outfile: O
     plt.xlabel("Features")
     plt.ylabel("Samples")
     plt.show()
+
+
+def plt_umap_with_color(
+    pav_df_t: pd.DataFrame,
+    meta_df: pd.DataFrame,
+    color_col: str,
+    outfile: Optional[str] = None
+):
+    """
+    Create a UMAP plot of binary PAV data, coloring points based on a specified column in meta_df.
+
+    Parameters
+    ----------
+    pav_df_t : pd.DataFrame
+        Binary PAV data (samples as rows, features as columns).
+    meta_df : pd.DataFrame
+        Metadata DataFrame with an index matching pav_df_t.
+    color_col : str
+        Column name in meta_df to use for coloring the points.
+    outfile : str, optional
+        If provided, saves the plot to this path.
+    """
+    # Fit UMAP on binary PAV data using Jaccard distance
+    umap_model = UMAP(n_components=2, random_state=42, metric="jaccard")
+    umap_coords = umap_model.fit_transform(pav_df_t)
+
+    # Create UMAP dataframe for plotting
+    umap_df = pd.DataFrame(umap_coords, columns=["UMAP1", "UMAP2"], index=meta_df.index)
+    umap_df[color_col] = meta_df[color_col]
+
+    # Assign consistent colors to unique groups
+    groups = umap_df[color_col].unique()
+    colors = plt.cm.tab10.colors  # or another colormap like plt.cm.Set2.colors
+    color_map = {group: colors[i % len(colors)] for i, group in enumerate(groups)}
+
+    # Create plot
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    for group in groups:
+        subset = umap_df[umap_df[color_col] == group]
+        ax.scatter(
+            subset["UMAP1"],
+            subset["UMAP2"],
+            label=group,
+            color=color_map[group],
+            edgecolor='black',
+            s=60,
+            alpha=0.8
+        )
+
+    # Formatting
+    ax.set_title("UMAP of PAV Matrix", fontsize=14)
+    ax.set_xlabel("UMAP1")
+    ax.set_ylabel("UMAP2")
+    ax.grid(True, linestyle='--', linewidth=0.5, color='lightgray')
+    ax.legend(title=color_col, loc='center left', bbox_to_anchor=(1.02, 0.5))
+    plt.tight_layout()
+
+    if outfile:
+        outfile_path = Path(outfile)
+        plt.savefig(outfile_path)
+
+    return plt
 
 if __name__ == "__main__":
     fpav_df =filter_pavs_by_prevalance(pav_df, 0.4, 0.7)
