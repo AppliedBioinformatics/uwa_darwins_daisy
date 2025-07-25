@@ -8,7 +8,7 @@ import csv
 data_dir = Path("../../data/functional_annotation")
 
 # Load diamond results.
-diamond_df = pd.read_csv(data_dir / "diamond_results_protein.tsv", sep="\t", header=None)#
+diamond_df = pd.read_csv(data_dir / "diamond_results_protein.tsv", sep="\t", header=None)
 diamond_df.columns = DIAMOND_TSV_HEADERS
 diamond_df["sseqid"] = diamond_df["subject_id"].str.extract(r'\|([A-Z0-9]+)\|')
 

@@ -168,11 +168,11 @@ I then created a list of unique accession_id's from the output of the `diamond b
 [diamond_results.tsv](/data/functional_annotation/diamond_results_protein.tsv). Using the command:
 `cut -f2 diamond_results.tsv | cut -d'|' -f2 | sort -u > accessions.txt`
 
-Finally, I used `gunzip`'d the mapping file and then screened it for the unique accessions created above using the
+Finally, I `gunzip`'d the mapping file and then screened it for the unique accessions created above using the
 command: 
 ```bash
 awk -F'\t' '
-  NR==FNR {acc[$1]; next}
+  NR==FNR {acc[$1]; next}ls
   ($1 in acc) && $7 != "" {
     go[$1] = go[$1] ? go[$1]";"$7 : $7
   }
@@ -203,7 +203,7 @@ First of all I thought it would be a good idea to get an overview of which Go te
 this will allow me to establish a functional landscape and give a broad overview of which go terms are most 
 represented by the hits.
 
-[This](/scripts/functional_annotation/analyse_go_terms.py) Python script was used to generate all go-term related 
+[This](/scripts/go_enrichment/analyse_go_terms.py) Python script was used to generate all go-term related 
 analysis. It also contains the code used to generate a human-readable GO-id : Go-term readable file, that provides a 
 human-readable mapping of each go-id that can be used to make any subsequent figures more readable. The input file for 
 this was obtained from this link: `https://geneontology.org/docs/download-ontology/`. The `go-basic.obo` was downloaded
@@ -234,12 +234,12 @@ Non-core genes (genes marked as absent in at least one sample).
 
 The results above give a good indication as to the results we might expect to see through a gene enrichment analysis.
 I will run a gene enrichment analysis using the `goatools` python package, which I was able to install with conda on
-my local pc. The script use to run the GO enrichment analysis is [here](/scripts/functional_annotation/go_enrichment.py)
+my local pc. The script use to run the GO enrichment analysis is [here](/scripts/go_enrichment/go_enrichment.py)
 
 ### Update 18/07/2025 - 22/07/2025.
 After Discussing with Dave, I will have a more thorough look into absent genes that are associated with the 
 terpenoid pathway. The number 1 scoring go term in the non-core gene lists. This 
-[script](/scripts/functional_annotation/filter_by_go.py) was used to complete that analysis. Taking these results,
+[script](/scripts/go_enrichment/filter_by_go.py) was used to complete that analysis. Taking these results,
 I also completed a small review to assess future directions that we could take the project. This work is located
 [here](/reports/sgsgeneloss_gene_analysis.docx)
 
