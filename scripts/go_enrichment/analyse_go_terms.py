@@ -2,7 +2,6 @@ import pandas as pd
 from collections import Counter
 from pathlib import Path
 import ast
-from tabulate import tabulate
 from itertools import chain
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -11,7 +10,7 @@ import seaborn as sns
 DATA_DIR = Path("../../data/functional_annotation/")
 GO_DIAMOND_DF_PATH = Path(DATA_DIR / "go_merged_diamond_results_uniprot.tsv")
 GO_NAMES_MAP_DF_PATH = Path(DATA_DIR / "go_terms_human_readable.tsv")
-GO_HR_PATH = Path(DATA_DIR / "go_terms_human_readable.tsv")
+GO_HR_PATH = Path(DATA_DIR / "goterms_human_readable.tsv")
 PAV_DF_PATH = Path("../../data/sgsgeneloss/pav_matrix.csv")
 
 # Read and format Go-ID : Go-Names data.
