@@ -514,6 +514,45 @@ the main sample set. I.e results are directly comparable as they will contain th
 I downloaded the results to my local PC to creat The PAV data for the mainland species and ran an inner join on the
 column with the sample PAV matrix in order to make a dataframe that enabled comparison of results.
 
+I then followed the same process outlined [here](#analysis-of-sgsgeneloss-results-07072025) to generate the PAV data
+for the mainland species. I realised that the PAV matrix for the mainland species with the island bases gff3 file showed
+mostly absent genes. Here are some summary statistics:
+
+* 398/43023 genes were flagged as "present" using the current SGSGeneloss parameters.
+
+It may be better to rerun SGSGeneloss using more relaxed parameters to see it this increases the presence/abcence
+data allowing for the higher degree of divergence between the island and mainland species.
+
+I decided to rerun SGSGeneloss with relaxed parameters: 
+```bash
+java -Xmx4G -jar "$SGSGENELOSS_JAR" bamPath=./ bamFileList=mainland_sorted.bam gffFile= <gff_file> \ 
+outDirPath= . chromosomeList=all minCov=0.8
+```
+
+I then Regenerated the PAV data and checked to see how many Genes were marked present with the new parameters and 
+increased the number of present genes to 428. I am going to try further reducing the MinCov parameter to 0.5 as a final
+attempt with these parameters:
+
+```bash
+java -Xmx4G -jar "$SGSGENELOSS_JAR" bamPath=./ bamFileList=mainland_sorted.bam gffFile= <gff_file> \ 
+outDirPath= . chromosomeList=all minCov=0.5
+```
+
+## Phylogenetic analysis using PAV matrix (05/08/2025).
+Teng thought it would be a good idea to try to visualise sample similarity using a phylogenetic tree generated using 
+the PAV data. I wrote the code for this in this [script](/scripts/sgsgeneloss/phylogenetic_pav_tree.py). I used 
+Hamming distance as the metric used to generate the phylogenetic tree. Another option would be to use Jaccard, but this
+will only take into account presence rather than presence and abcence.
+
+The tree was produced using neighbourhood joining as it is a general method and does not assume a constant rate of 
+evolution. Generated reasonable accuracy. May need to look into running again with UPGMA.
+
+May be a good idea to take some of the genes and run a Maximum-likelihood/baysian inference analysis using sequencing 
+data to back up the story of gene loss. Does it cluster similar to the phylogeny analysis of the PAV matrix?.
+
+The `.nwk` file for the tree is saved [here](/data/sgsgeneloss/phylo_pav_tree.nwk).
+The annotation file for Itol is saved [here](/data/sgsgeneloss/itol_annotation.txt)
+
 
 
 

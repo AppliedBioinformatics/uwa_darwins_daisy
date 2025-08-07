@@ -1,0 +1,46 @@
+DATASET_COLORSTRIP
+SEPARATOR TAB
+DATASET_LABEL	Island
+COLOR	#000000
+
+LEGEND_TITLE	Island
+LEGEND_SHAPES	1	1	1	1	1	1	1	1	1	1	1
+LEGEND_COLORS	#1f77b4	#ff7f0e	#2ca02c	#d62728	#9467bd	#8c564b	#e377c2	#7f7f7f	#bcbd22	#17becf	#aec7e8
+LEGEND_LABELS	Bartolomé	Champion	Floreana	Isabela	Isla Eden	Pinzon	Pinta	San Cristóbal	Santa Cruz	Santa Fé	Santiago
+
+DATA
+'AHA6 30'	        #8c564b
+'HALM11 13'       #7f7f7f
+'HALM12 19'      #7f7f7f
+'HALM19 24'       #7f7f7f
+'HALM20 21'       #7f7f7f
+'HALM23 8'        #7f7f7f
+'HALM25 19'       #bcbd22
+'HALM26 18'       #bcbd22
+'HALM32 22'       #aec7e8
+'HALM35 20'       #1f77b4
+'HALM36 12'       #aec7e8
+'HALM37 1'        #9467bd
+'HALM39 23'       #bcbd22
+'HALM41 26'       #bcbd22
+'HALM44 17'       #d62728
+'HALM51 21'       #d62728
+'HALM53 3'        #d62728
+'HALM62 6'        #bcbd22
+'HALM64 10'       #bcbd22
+'HALM65 11'       #17becf
+'HALM8 13'        #bcbd22
+'HAMP10 45'       #bcbd22
+'HAMP24 2'        #ff7f0e
+'HAMP28 35'       #2ca02c
+'HAMP29 50'       #2ca02c
+'HAMP30 39'       #2ca02c
+'HAMP36 1'        #7f7f7f
+'HAMP38 7'        #7f7f7f
+'HAMP4 56'        #bcbd22
+'HAMP40 29'       #7f7f7f
+'HAMP5 15'        #bcbd22
+'HAMP7 6'         #bcbd22
+'LAM26 15'        #bcbd22
+'SLAM20 2'        #e377c2
+'SLAM27 24'       #e377c2
