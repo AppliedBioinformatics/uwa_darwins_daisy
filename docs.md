@@ -111,6 +111,10 @@ co-ordinates around the Galápagos Islands themselves. Here is the plot:
 
 ![Co-ordinate location of samples.](plots/sgsgeneloss/galapagos_map_with_samples.png)
 
+### Optimisation of UMAP parameters (13/08/2025).
+After speaking with Teng, he mentioned that I may be able to add some optimisation for the UMAP of the samples by 
+adjusting the number of principal components and n_neighbours. 
+
 ## Functional annotation (09/07/2025) - (11/07/2025).
 In order to provide a more informative analysis of which genes are retained/lost in each sample. I need to add 
 additional annotation to the maker-generated gff3 annotation file used to run SGSGeneloss. In order to provide 
@@ -385,7 +389,7 @@ the Python script [here](/scripts/masurca/unmapped_contig_blastn_plots.py)
 I generated some [plots](/plots/masurca) That summarise the `blastn` information. I also generated a list of plant-only
 contig ID's and saved these [here](/data/masurca/plant_fasta_ids.txt).
 
-### Merging plant contigs back to original assembly (round1) (30/07/2025).
+### Merging plant contigs back to original assembly (30/07/2025).
 I transferred the list of [plant contig id's](/data/masurca/plant_fasta_ids.txt) to setonix and used the following code 
 to extract the relevant fasta sequences to a new file:
 
@@ -540,7 +544,7 @@ outDirPath= . chromosomeList=all minCov=0.5
 
 ## Phylogenetic analysis using PAV matrix (05/08/2025).
 Teng thought it would be a good idea to try to visualise sample similarity using a phylogenetic tree generated using 
-the PAV data. I wrote the code for this in this [script](/scripts/sgsgeneloss/phylogenetic_pav_tree.py). I used 
+the PAV data. I wrote the code for this in this [script](/scripts/sgsgeneloss/nj_pav_tree.py). I used 
 Hamming distance as the metric used to generate the phylogenetic tree. Another option would be to use Jaccard, but this
 will only take into account presence rather than presence and abcence.
 
@@ -551,9 +555,59 @@ May be a good idea to take some of the genes and run a Maximum-likelihood/baysia
 data to back up the story of gene loss. Does it cluster similar to the phylogeny analysis of the PAV matrix?.
 
 The `.nwk` file for the tree is saved [here](/data/sgsgeneloss/phylo_pav_tree.nwk).
-The annotation file for Itol is saved [here](/data/sgsgeneloss/itol_annotation.txt)
+The annotation file for Itol is saved [here](/data/sgsgeneloss/PAV_itol_annotation.txt)
 
+Mitch also generated a MASH plot using the `mashtree` package. The .nwk file is saved 
+[here](/data/sgsgeneloss/Daisies_all_mashtree_output.nwk). The Itol annotation file is saved 
+[here](/data/sgsgeneloss/MASH_itol_annotation.txt).
 
+There are some similarities between the two trees. I used the `ete3` package to plot the two trees side-by-side for 
+comparison using this [script](/scripts/sgsgeneloss/compare_pav_trees.py).
 
+## Running maker to annotate filtered masurca assembly (07/08/2025).
+In order to run maker to annotate the assembly produced by masurca I will need some protein data that can be used by
+maker to inform the annotation. For the first round I will use the following databases;
 
+* Helianthus annus - Common sunflower (model organism in daisy family). I downloaded the proteome from this reference 
+accession on [NCBI (refseq)](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002127325.2/) as well as the mRNA data.
 
+* Arabdiposis thaliana - A very well studied plant model organism. Not in the Diasy family but will have extended
+annotation. I downloaded the proteome and mRNA data from this 
+[NCBI link](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001735.4/) I used the GenBank accession file 
+`GCA_000001735.2` (Arabidopsis) and `GCA_002127325.2` (Helianthus).
+
+* The protein data from the scalasia reference genome available. (mRNA data was not available) 
+[here](https://datadryad.org/dataset/doi:10.5061/dryad.8gtht76rh)
+
+I may add this in a future round:
+* A more general collection of reviewed plant proteins from all Streptophyta species from UniProt:
+[Uniprot query](https://www.uniprot.org/uniprotkb?query=%28taxonomy_id%3A35493%29&facets=reviewed%3Atrue)
+
+### Running Repeat-modeler + RepeatMasker to define repeated regions of the pan genome.
+Before running Maker, I need to mask repeated regions of the genome using these two software. To do this I used the code
+snippet below after installing the two software's using `conda`:
+
+```bash
+cat scalesia_atractyloides.reference.fasta final_filtered_pangenome.fasta > final_pangenome.fasta
+BuildDatabase -n darwins_db final_pangenome.fasta
+RepeatModeler -database darwins_db -threads 64 -LTRStruct
+RepeatMasker -pa 64 -lib consensi.fa.classified -dir repeatmasker_out -a final_pangenome.fasta
+```
+I then concatenated all files for the protein and all files for the mRNA datasets to use for the `maker` and used
+the soft masked version of the .fasta file as the input for maker the soft masked file is saved [here]()
+
+I then used this script and these config files to run [maker round 1](/scripts/maker_round_1)
+
+## Generating Maximum likelihood tree using SNP's (11/08/2025).
+In order to really understand the migration patterns, I need to check to see how the species compare to each other 
+evolutionarily using a maximum likelihood tree. This will confirm if we are seeing back-migration through the 
+PAV matrix. In order to generate a maximum likelihood tree, I used the following process:
+
+I first generated a list of sorted `.bam` files for each of the 34 samples using this [script](/script/ml_tree/). I
+then used the following code snippets to generate a .vcf file containing high quality SNP's for each sample that can be
+used to build the tree.
+
+```bash
+bcftools mpileup -Ou -f ../000000_dd_reference/scalesia_atractyloides.reference.fasta \
+-b sortedbamlist.txt -q 20 -Q 20 -C 50 -a FORMAT/DP,AD --threads 32 > ../250811_ml_tree/raw.bcf
+```

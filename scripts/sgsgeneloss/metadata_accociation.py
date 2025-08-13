@@ -8,14 +8,17 @@ from pathlib import Path
 
 
 # Load data/metadata.
-pav_df = pd.read_csv("../../data/sgsgeneloss/pav_matrix.csv", index_col=0)
-meta_df = pd.read_excel("../../metadata/raw_sample_metadata.xlsx", index_col=0)
+pav_df = pd.read_csv("../../data/sgsgeneloss/pav_matrix.csv", index_col=0, header=0)
+meta_df = pd.read_excel("../../metadata/raw_sample_metadata.xlsx", index_col=0, header=0)
 
 # Do some formatting.
 pav_df.columns = pav_df.columns.str.replace('_merged_all$', '', regex=True)
 pav_df_t = pav_df.T
-meta_df = meta_df.iloc[:-1].drop(columns="comment")
+#meta_df = meta_df.iloc[:-1].drop(columns="comment")
 meta_df = meta_df.loc[meta_df.index.intersection(pav_df_t.index)]
+
+print(pav_df_t.shape)
+print(meta_df.shape)
 
 # Some plots to show association of samples between islands:
 def plt_island_umap(pav_df_t: pd.DataFrame, meta_df: pd.DataFrame, outfile: Optional[str] = None):
@@ -58,6 +61,83 @@ def plt_island_umap(pav_df_t: pd.DataFrame, meta_df: pd.DataFrame, outfile: Opti
     if outfile:
         outfile_path = Path(outfile)
         plt.savefig(outfile_path)
+
+    return plt
+
+def plt_island_umap_3_dims(pav_df_t: pd.DataFrame, meta_df: pd.DataFrame, outfile: Optional[str] = None):
+    umap_model = UMAP(n_components=3, random_state=42, metric="jaccard", n_neighbors=7)
+    umap_coords = umap_model.fit_transform(pav_df_t)
+    umap_df = pd.DataFrame(umap_coords, columns=["UMAP1", "UMAP2", "UMAP3"], index=meta_df.index)
+    umap_df["Island"] = meta_df["Island"]
+
+    islands = umap_df["Island"].unique()
+    colors = plt.cm.tab10.colors  # colormap
+    color_map = {island: colors[i % len(colors)] for i, island in enumerate(islands)}
+
+    fig = plt.figure(figsize=(10, 8))
+    ax = fig.add_subplot(111, projection='3d')
+
+    for island in islands:
+        subset = umap_df[umap_df["Island"] == island]
+
+        # Scale sizes by UMAP3 coordinate for depth perception
+        z = subset["UMAP3"]
+        min_size, max_size = 20, 100
+        sizes = min_size + (z - z.min()) / (z.max() - z.min()) * (max_size - min_size)
+
+        ax.scatter(
+            subset["UMAP1"],
+            subset["UMAP2"],
+            subset["UMAP3"],
+            label=island,
+            color=color_map[island],
+            edgecolor='black',
+            s=sizes,
+            alpha=0.8
+        )
+
+    # Set tight limits to minimize whitespace
+    ax.set_xlim(umap_df["UMAP1"].min(), umap_df["UMAP1"].max())
+    ax.set_ylim(umap_df["UMAP2"].min(), umap_df["UMAP2"].max())
+    ax.set_zlim(umap_df["UMAP3"].min(), umap_df["UMAP3"].max())
+    ax.margins(0)
+
+    # Formatting
+    ax.set_title("3D UMAP of PAV Matrix", fontsize=14)
+    ax.set_xlabel("UMAP1")
+    ax.set_ylabel("UMAP2")
+    ax.set_zlabel("UMAP3")
+    ax.legend(title="Island", loc='center left', bbox_to_anchor=(1.02, 0.5))
+
+    plt.tight_layout()
+
+    import matplotlib.lines as mlines
+
+    # ... inside your function, after plotting ...
+
+    # Create fixed-size legend handles
+    legend_handles = []
+    fixed_size = 60  # This is like s=60 in scatter, but legend markersize is sqrt(s)
+
+    for island in islands:
+        legend_handles.append(
+            mlines.Line2D(
+                [], [],
+                color=color_map[island],
+                marker='o',
+                linestyle='',
+                markersize=fixed_size ** 0.5,
+                markeredgecolor='black',
+                alpha=0.8,
+                label=island
+            )
+        )
+
+    ax.legend(handles=legend_handles, title="Island", loc='center left', bbox_to_anchor=(1.02, 0.5))
+
+    if outfile:
+        outfile_path = Path(outfile)
+        plt.savefig(outfile_path, bbox_inches='tight')
 
     return plt
 
@@ -158,13 +238,12 @@ def plt_non_core_heatmap(pav_df: pd.DataFrame, meta_df: pd.DataFrame, outfile: O
     plt.ylabel("Samples")
     plt.show()
 
-
 def plt_umap_with_color(
     pav_df_t: pd.DataFrame,
     meta_df: pd.DataFrame,
     color_col: str,
     outfile: Optional[str] = None
-):
+    ):
     """
     Create a UMAP plot of binary PAV data, coloring points based on a specified column in meta_df.
 
@@ -180,7 +259,7 @@ def plt_umap_with_color(
         If provided, saves the plot to this path.
     """
     # Fit UMAP on binary PAV data using Jaccard distance
-    umap_model = UMAP(n_components=2, random_state=42, metric="jaccard")
+    umap_model = UMAP(n_components=2, random_state=42, metric="jaccard", n_neighbors=7)
     umap_coords = umap_model.fit_transform(pav_df_t)
 
     # Create UMAP dataframe for plotting
@@ -222,9 +301,7 @@ def plt_umap_with_color(
     return plt
 
 if __name__ == "__main__":
-    fpav_df =filter_pavs_by_prevalance(pav_df, 0.4, 0.7)
-    plt_non_core_heatmap(fpav_df, meta_df)
-
-
+    plt_island_umap_3_dims(pav_df_t=pav_df_t, meta_df=meta_df).show()
+    plt_umap_with_color(pav_df_t, meta_df, color_col="Island").show()
 
     #plt_non_core_heatmap(pav_df, meta_df)
