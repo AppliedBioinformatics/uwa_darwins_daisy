@@ -108,7 +108,6 @@ def plt_top_n_go_enriched_terms_by_namespace(df: pd.DataFrame, n: int = 15) -> p
     plt.tight_layout()
     return plt.gcf()
 
-
 if __name__ == "__main__":
     bg_gene2go = get_gene2go(bg_df)
     nc_gene2go = get_gene2go(nc_df)

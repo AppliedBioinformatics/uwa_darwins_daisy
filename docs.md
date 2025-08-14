@@ -47,7 +47,7 @@ to show raw read count per sample against number of genes called as present.
 
 ## Generating present genes and read depth plot (30/06/2025).
 Gagan's sorted .bam folder only contains 26 bam files. I am going to use the raw_bams to complete the merge, as 
-there should be 35 samples according to the [metadata](metadata/raw_sample_metadata.xlsx)
+there should be 34 samples according to the [metadata](metadata/raw_sample_metadata.xlsx)
 
 To Generate the plot I will complete the following workflow:
 * Get read depth per .bam file using `samtools view -c -F 260 <sample>.bam`. This will get the number of mapped reads.
@@ -449,7 +449,6 @@ PAV matrix removing any genes that were NOT associated with any of the 15 top mo
 dataset. The results for this analysis are below:
 
 ![Go Non-core gene subset](/plots/go_enrichment/ncore_15_enrch_go_v_distance_frm_santiago.png)
-
 Both a standard linear regression and GLM (Poisson Model) showed a significant negative correlation between distance 
 from Santiago and the number of genes belonging to the top 15 most enriched GO terms within the non-core dataset. I will
 need to interpret this result to try to explain why the subset shows a greater correllation compared to the whole 

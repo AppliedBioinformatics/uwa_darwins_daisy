@@ -2,7 +2,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
-import requests
 
 # GLOBALS
 TOTAL_GFF_FEATURES = 43093 # (Number of features described in maker gff file).
