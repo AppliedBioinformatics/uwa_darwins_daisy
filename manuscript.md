@@ -18,15 +18,15 @@ existing DOI: Dryad: 10.5061/dryad.8gtht76rh [ref]. The FASTA file was indexed u
 
 Illumina paired end reads were obtained from [complete] for thirty-four individuals within the Galápagos Islands, 
 collectively representing eighteen different _scalasia_ species [supplementary table with meta-data]. Initial read 
-quality metrics were obtained using FastQC (v0.11.9) [ref]. Paired samples were then processed with Trimmomatic using
-the parameters:
+quality metrics were obtained using FastQC (v0.11.9) [ref]. Paired samples were then processed with Trimmomatic with
+parameters:
 
 `ILLUMINACLIP:$ADAPTERS:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:99 TOPHRED33`
 
 Post-trimmed quality was assessed with FastQC/MultiQC (v1.12) [ref]. Trimmed FASTA files were aligned to the reference 
 genome using Bowtie2 (v2.4.5) with the --sensitive flag and insert size parameters -I 0 -X 1000.
-sorted BAM files for the thirty-four samples were generated using Samtools (v0.5.0) with `view`, `sort` and 
-`index` commands (default parameters). Initial alignment metrics were generated using Samtools `stats` and visualised
+sorted BAM files for the thirty-four samples were generated with Samtools (v0.5.0) with `view`, `sort` and 
+`index` commands (default parameters). Initial alignment metrics were generated with Samtools `stats` and visualised
 using a custom Python script [maybe more info].
 
 ### Generation of Presence/Abcence Variation Matrix.
@@ -63,14 +63,16 @@ following code snippet, to return all hits paired with associated taxonomy infor
 Hits with E-value < 1e-5 were considered statistically significant. Resulting BlastP hits were annotated with GO terms 
 using the publicly available Go term mapping file available here:
 https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/idmapping/idmapping_selected.tab.gz,
-using a custom Python script to merge GO terms with BlastP hits using the 'staxids' field. 
+using a custom Python script and the Obonet package [version] to merge GO terms with BlastP hits using the 'staxids'
+field. The top high confidence hit (if multiple hits) was used to provide functional annotation of the feature. 
 
 ### Gene Enrichment Analysis.
 A custom Python script [link] was used to map GO terms from the BlastP hits to their human-readable descriptions using 
 the publicly available mapping file `go-basic.obo` available for download here: https://geneontology.org/docs/download-ontology/.
 
 Go enrichment analysis was performed using the `goatools` (v1.4.12) [ref] Python package using the function 
-GOEnrichmentStudy() with parameters: `alpha=0.01, methods=["fdr_bh] propagate_counts=True`
+GOEnrichmentStudy() with parameters: `alpha=0.01, methods=["fdr_bh] propagate_counts=True. Fishers exact test was used
+to assess significance. GO terms with P < 0.01 were considered significant. 
 
 ### Phylogenetic analysis.
 The presence abcence binary matrix generated above was used to assess phylogenetic relationships with the `scikit-bio`
@@ -102,33 +104,37 @@ To assess the extent and pattern of feature abcence variation between individual
 PAV matrix and compared with sample metadata [sup table linking to sample metadata].[F1.3].
 UMAP clustering confirmed feature abcence variation between individuals, with most samples clustering with other 
 individuals from the same island or island group. [split Islands into island groups - I.e. central islands etc.]. These 
-findings suggest that individuals from the same or neighbouring islands tend to share a more similar feature abcence 
+data suggest that individuals from the same or neighbouring islands tend to share a more similar feature abcence 
 profile than geographically distant individuals.
 
 ![Figure 1](figures/f1_canva.png "Figure 1")
 
 ### GO Enrichment Analysis Indicates Abcence of Genes Relating to Secondary Metabolic Pathways. 
-In order to gain further insight into the non-core feature set. Functional annotation was performed for all features 
-within the reference gff file by running a Blastp search of extracted protein sequences against the Uniprot-sprot 
+To gain further insight into the non-core feature set, functional annotation was attempted for all features 
+within the reference gff file via Blastp search of extracted protein sequences against the Uniprot-sprot 
 database of highly annotated proteins. In total, high-confidence BlastP hits (E-value < 1e-5) were obtained for 36550 
-of the gff file features - 83.70% and henceforth referred to as genes. GO ID's and ontology were retrieved for each
-hit by merging the GO mapping file from Uniprot on `staxids`. Human-readable descriptions of GO ID's were appended with 
-Obonet [ref]. 1508/1988 high-confidence hits were obtained for the Non-core feature subset. 
+of the gff file features - 83.70% and henceforth referred to as genes. GO ID's and description ontology were retrieved 
+for each hit by merging the GO mapping file from Uniprot on `staxids`. Top taxonomic kingdom [Fig2.3] and species [Fig 2.4]
+were analysed to support the accuracy of functional annotation with 32758/36550 hits mapping to _Virdiplantae_
+and 23506/36550 mapping to species _Arabidopsis thaliana_.
 
-[Figure 2.1 showing annotation statistics Could show hits per phyla/species etc.]
+![Figure 2](/figures/f2_canva.png)
 
-GO enrichment analysis was conducted on the non-core gene set to assess whether variable gene content of the
-Scalesia genus exhibits patterns similar to those observed in variable gene sets of other plants species. [refs].
-Results identified significant enrichment (abcence) of 45 GO terms (alpha < 0.01)...
+GO enrichment analysis was conducted on the non-core gene set with the Goatools package [ref], to assess whether 
+variable gene content of the _Scalesia_ genus exhibits patterns similar to those observed in variable gene sets of other
+plants species. [refs]. Results identified significant enrichment (abcence) of 45 GO terms (P < 0.01), top 20 shown in
+[figure 2.1]. Results identified significant loss of genes involved in secondary metabolite biosynthesis, with
+loss of genes involved in production of terpenoids and broader isoprenoid compounds. The role of terpenoids in plants as 
+defensive compounds is well documented [ref]. Loss of genes involved in biosynthesis of secondary compounds in island 
+species is a key hallmark of "plant island syndrome" [ref]. 
 
 ## Spatial Variation in Gene Presence–Absence Reflects Progressive Gene Loss Away from the Galápagos Central Islands.
 In line with previous evidence, we hypothesised the pattern of feature abcence observed may be associated with the
-evolutionary migration pattern of _scalasia_ across the Galápagos. Using prior work by [Author et al., Year],
-that suggests a common ancestor of _scalasia_ landed and migrated outwards from the central islands of the archipelago
+evolutionary migration pattern of _scalasia_ across the Galápagos. Using prior work by [Ref],
+suggesting a common ancestor of _scalasia_ landed and migrated outwards from the central islands of the archipelago
 (Santiago, Santa Cruz, Floreana, and Isabela), before colonising the older island of San Cristóbal. We calculated the 
 distance in longitude/latitude of each individual from the centre of Santiago island, to assess whether this distance
-correlated with number of absent features for each sample.
-
+correlated with number of absent features for each sample. 
 
 # Discussion.
 * Not all samples similar feature abcence profiles with individuals of the same or neighboring islands - Santiago sample etc.

@@ -100,8 +100,12 @@ def plt_counts_per_kingdom(ddf = pd.DataFrame) -> px.bar:
         xaxis_title="Taxonomic Kingdom",
         yaxis_title="Number of Hits",
         uniformtext_minsize=8,
-        uniformtext_mode='hide'
+        uniformtext_mode='hide',
+        showlegend = False
     )
+
+    plt.update_layout(template="simple_white")
+
     return plt
 
 def plt_counts_per_species(ddf = pd.DataFrame, n: int = 10) -> px.bar:
@@ -131,9 +135,11 @@ def plt_counts_per_species(ddf = pd.DataFrame, n: int = 10) -> px.bar:
         xaxis_title="Species",
         yaxis_title="Number of Hits",
         uniformtext_minsize=8,
-        uniformtext_mode='hide'
+        uniformtext_mode='hide',
+        showlegend=False
     )
 
+    plt.update_layout(template="simple_white")
     return plt
 
 if __name__=="__main__":
@@ -146,8 +152,10 @@ if __name__=="__main__":
 
     # Significant hits based on revalue.
     sig_hits = ddf[ddf["evalue"] <= SIG_THRESHOLD]
-    n_sig = len(sig_hits)
+
 
     # Build plots.
     fig = plt_counts_per_species(ddf=ddf, n=15)
     save_plotly_figure(fig, "diamond_hits_counts_per_species")
+    fig1 = plt_counts_per_kingdom(ddf=ddf)
+    save_plotly_figure(fig1, "diamond_hits_per_kingdom")

@@ -43,6 +43,7 @@ def get_gene2go(df: pd.DataFrame) -> dict:
     return gene2go
 
 def get_enrichment_results_df(go_results: list) -> pd.DataFrame:
+
     df_results = pd.DataFrame([
         {
             "GO": r.GO,
@@ -53,9 +54,10 @@ def get_enrichment_results_df(go_results: list) -> pd.DataFrame:
             "pop_count": r.pop_count,
             "pop_n": r.pop_n,
             "p_uncorrected": r.p_uncorrected,
-            "p_fdr_bh": r.p_fdr_bh
+            "p_fdr_bh": r.p_fdr_bh,
+            "enrichment": r.enrichment
         }
-        for r in results
+        for r in go_results
     ])
 
     return df_results
@@ -108,6 +110,22 @@ def plt_top_n_go_enriched_terms_by_namespace(df: pd.DataFrame, n: int = 15) -> p
     plt.tight_layout()
     return plt.gcf()
 
+def plt_go_bar(df: pd.DataFrame, top_n: int = 15, title=None) -> plt.Figure:
+    df = df.head(top_n).copy()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(
+        x="-log10(FDR)",
+        y="short_name",
+        data=df,
+        palette="viridis",
+        ax=ax
+    )
+    ax.set_xlabel("-log10(FDR)")
+    ax.set_ylabel("GO Term")
+    ax.set_title(title or f"Top {top_n} Enriched GO Terms")
+    plt.tight_layout()
+    return fig
+
 if __name__ == "__main__":
     bg_gene2go = get_gene2go(bg_df)
     nc_gene2go = get_gene2go(nc_df)
@@ -129,10 +147,22 @@ if __name__ == "__main__":
 
     results = goea.run_study(study_genes)
     results_df = get_enrichment_results_df(results)
-    sig_df = results_df[results_df["p_fdr_bh"] < 0.05].copy()
+    sig_df = results_df[results_df["p_fdr_bh"] < 0.01].copy()
     sig_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results.csv", index=False)
 
-    # Format for visualisation
-    sig_df["-log10(FDR)"] = -np.log10(sig_df["p_fdr_bh"])
-    sig_df["short_name"] = sig_df["name"].apply(lambda x: x if len(x) < 40 else x[:37] + "...")
+    # Filter for overrepresented and underrepresented genes.
+    over_df = sig_df[sig_df['enrichment'] == 'e'].copy()
+    over_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results_overrep.csv", index=False)
+    under_df = sig_df[sig_df['enrichment'] == 'p'].copy()
+    under_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results_underrep.csv", index=False)
 
+    # Format for visualisation
+    over_df["-log10(FDR)"] = -np.log10(sig_df["p_fdr_bh"])
+    over_df["short_name"] = over_df["name"].apply(lambda x: x if len(x) < 40 else x[:37] + "...")
+    over_df = over_df.sort_values("-log10(FDR)", ascending=False)
+
+    # Publication plot.
+    fig = plt_go_bar(over_df, top_n=20)
+    fig.savefig("../../plots/go_enrichment/goatools_go_enrichment_results_overrep_top20.png")
+    fig = plt_top_n_go_enriched_terms_by_namespace(over_df, n=10)
+    fig.savefig("../../plots/go_enrichment/goatools_go_enrichment_results_overrep_top10_ns.png")
