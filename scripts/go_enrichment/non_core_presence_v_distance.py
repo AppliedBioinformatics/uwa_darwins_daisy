@@ -8,13 +8,22 @@ import ast
 
 # Configuration & Globals
 GO_TERMS = [
-    "GO:0016114", "GO:0008299", "GO:0090304", "GO:0006721", "GO:0006139", "GO:0006720", "GO:0043170",
-    "GO:0120251", "GO:0006396", "GO:0120252", "GO:0006629", "GO:0016101", "GO:0016070", "GO:0009699",
-    "GO:0044550"
+    "GO:0016114",  # Terpenoid biosynthetic process
+    "GO:0008299",  # Isoprenoid biosynthetic process
+    "GO:0006721",  # Terpenoid metabolic process
+    "GO:0006720",  # Isoprenoid metabolic process
+    "GO:0120251",  # Hydrocarbon biosynthetic process
+    "GO:0120252",  # Hydrocarbon metabolic process
+    "GO:0006629",  # Lipid metabolic process
+    "GO:0016102",  # Diterpenoid biosynthetic process
+    "GO:0009699",  # Phenylpropanoid biosynthetic process
+    "GO:0044550",  # Secondary metabolite biosynthetic process
 ]
+
 PAV_FILE = Path("../../data/sgsgeneloss/pav_matrix.csv")
 DMND_FILE = Path("../../data/functional_annotation/noncore_go_merged_diamond_results_uniprot.csv")
 META_FILE = Path("../../metadata/raw_sample_metadata.xlsx")
+
 ORIGIN = (-0.252, -90.718)  # Santiago
 
 def load_data():
@@ -83,12 +92,13 @@ def plot_gene_count_vs_distance(merged_df):
         color="black",
         line_kws={"lw": 2, "ls": "--"}
     )
-    plt.title("Enriched non-core gene count over distance from Santiago. (Colored by Island).")
+    plt.title("All Non-core Genes.")
     plt.xlabel("Distance from Origin - Santiago. (km)")
-    plt.ylabel("Total Present Non-core gene count form top 15 enriched go terms.")
+    plt.ylabel("Total Present Genes.")
     plt.legend(title="Island", bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.tight_layout()
     plt.savefig("../../plots/go_enrichment/ncore_presence_v_distance_frm_santiago.png")
+    plt.show()
 
 def run_regression_analysis(merged_df):
     X = sm.add_constant(merged_df["distance_km"])

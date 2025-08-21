@@ -2,6 +2,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
+import plotly.io as pio
 
 # GLOBALS
 TOTAL_GFF_FEATURES = 43093 # (Number of features described in maker gff file).
@@ -11,6 +12,29 @@ OUTDIR_PATH = Path("../../plots/functional_annotation/")
 DIAMOND_TSV_HEADERS = ["query_id", "subject_id", "identity", "alignment_length", "mismatches", "gap_opens", "q_start",
                        "q_end", "s_start", "s_end", "evalue", "bit_score", "staxids", "stitle", "sscinames",
                        "sskingdoms", "skingdoms", "sphylums"]
+
+pio.templates["publication"] = pio.templates["simple_white"]
+
+pio.templates["publication"].layout.update(
+    font=dict(size=15, family="Arial", color="black"),
+    title=dict(
+        text="",  # placeholder, overwritten per plot
+        x=0.5,
+        xanchor="center",
+        font=dict(size=25, family="Arial", color="black")
+    ),
+    xaxis=dict(
+        title=dict(font=dict(size=25, family="Arial", color="black")),
+        tickfont=dict(size=25, family="Arial", color="black")
+    ),
+    yaxis=dict(
+        title=dict(font=dict(size=25, family="Arial", color="black")),
+        tickfont=dict(size=25, family="Arial", color="black")
+    ),
+    margin=dict(t=80, b=80, l=80, r=40)
+)
+
+pio.templates.default = "publication"
 
 # Function for saving figures.
 def save_plotly_figure(fig: go.Figure, name:str, extension: str = "png") -> None:
@@ -96,6 +120,7 @@ def plt_counts_per_kingdom(ddf = pd.DataFrame) -> px.bar:
         color_discrete_sequence=px.colors.qualitative.Vivid
     )
     plt.update_traces(textposition="outside")
+
     plt.update_layout(
         xaxis_title="Taxonomic Kingdom",
         yaxis_title="Number of Hits",
@@ -103,8 +128,7 @@ def plt_counts_per_kingdom(ddf = pd.DataFrame) -> px.bar:
         uniformtext_mode='hide',
         showlegend = False
     )
-
-    plt.update_layout(template="simple_white")
+    plt.update_layout(template="publication")
 
     return plt
 
@@ -139,7 +163,7 @@ def plt_counts_per_species(ddf = pd.DataFrame, n: int = 10) -> px.bar:
         showlegend=False
     )
 
-    plt.update_layout(template="simple_white")
+    plt.update_layout(template="publication")
     return plt
 
 if __name__=="__main__":
@@ -152,7 +176,6 @@ if __name__=="__main__":
 
     # Significant hits based on revalue.
     sig_hits = ddf[ddf["evalue"] <= SIG_THRESHOLD]
-
 
     # Build plots.
     fig = plt_counts_per_species(ddf=ddf, n=15)

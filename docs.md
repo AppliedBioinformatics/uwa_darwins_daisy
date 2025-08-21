@@ -113,7 +113,11 @@ co-ordinates around the Galápagos Islands themselves. Here is the plot:
 
 ### Optimisation of UMAP parameters (13/08/2025).
 After speaking with Teng, he mentioned that I may be able to add some optimisation for the UMAP of the samples by 
-adjusting the number of principal components and n_neighbours. 
+adjusting the number of principal components and n_neighbours.
+
+After some trial and error, reducing the number of n_neighbours to 7 seemed to produce the best clustering between 
+samples. I also generated a separate UMAP plot with 3 dimensions that seems to show decent clustering by setting the
+`n_components` parameter to 3. 
 
 ## Functional annotation (09/07/2025) - (11/07/2025).
 In order to provide a more informative analysis of which genes are retained/lost in each sample. I need to add 

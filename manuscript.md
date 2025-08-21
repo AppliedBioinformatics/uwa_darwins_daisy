@@ -9,7 +9,7 @@ outwards from one of the central islands of the Galápagos. Any other papers tha
 * 
 
 
-## Materials and Methods.
+[## Materials and Methods.
 
 ### Bioinformatic processing of _Scalesia_ samples.
 The genome for _Scalesia atractyloides_ was used as the reference dataset for this study, obtained from the 
@@ -27,7 +27,7 @@ Post-trimmed quality was assessed with FastQC/MultiQC (v1.12) [ref]. Trimmed FAS
 genome using Bowtie2 (v2.4.5) with the --sensitive flag and insert size parameters -I 0 -X 1000.
 sorted BAM files for the thirty-four samples were generated with Samtools (v0.5.0) with `view`, `sort` and 
 `index` commands (default parameters). Initial alignment metrics were generated with Samtools `stats` and visualised
-using a custom Python script [maybe more info].
+using a custom Python script [maybe more info].]()
 
 ### Generation of Presence/Abcence Variation Matrix.
 The GFF annotation file for the reference dataset was downloaded using the same DOI above and utilised in tandem with the

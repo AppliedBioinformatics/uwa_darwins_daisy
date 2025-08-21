@@ -2,8 +2,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import Optional
-
-from matplotlib.pyplot import savefig
 from tabulate import tabulate
 from umap import UMAP
 from pathlib import Path

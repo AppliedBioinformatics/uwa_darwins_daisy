@@ -29,8 +29,18 @@ pop_colors = {
     'SLAM20_2':  '#9fc5e8',
     'SLAM27_24': '#9fc5e8',
     'HAMP38_7':  '#e69138',
-    'HALM32_22': '#f44336',
+    'HALM32_22': '#cc0000',
     'HALM25_19': '#6aa84f',
     'HAMP30_39': '#f1c232',
     'HAMP36_1':  '#e69138',
 }
+
+order = [
+    "HALM35_20", "HALM36_12", "HALM32_22", "HALM44_17", "HALM51_21", "HALM53_3", "AHA6_30",
+    "HALM37_1", "HALM26_18", "HALM39_23", "HALM41_26", "HALM62_6", "HALM64_10", "HALM8_13",
+    "HAMP10_45", "HAMP4_56", "HAMP5_15", "HAMP7_6", "LAM26_15", "HALM25_19", "HALM65_11",
+    "SLAM20_2", "SLAM27_24", "HALM11_13", "HALM12_19", "HALM19_24", "HALM20_21", "HALM23_8",
+    "HAMP36_1", "HAMP38_7", "HAMP40_29", "HAMP28_35", "HAMP29_50", "HAMP30_39"
+]
+
+ordered_pop_colors = {k: pop_colors[k] for k in order}

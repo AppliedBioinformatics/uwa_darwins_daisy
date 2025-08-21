@@ -1,5 +1,7 @@
 import pandas as pd
-import plotly.graph_objects as go
+from tabulate import tabulate
+from great_tables import GT
+
 
 # Function to extract the uniprot accession from "subject_id".
 def extract_accession(s):
@@ -26,49 +28,50 @@ summary = filtered_df.groupby("subject_id").agg(
     description=('stitle', "first"),
 ).reset_index().sort_values("n_copies_in_gff", ascending=False)
 
+# Ensure row index is integer-based (starting from 0)
+summary = summary.reset_index(drop=True)
+summary["subject_id"] = summary["subject_id"].str.split('|').str[-1]
+
 # Add uniprot links.
-summary['uniprot_accession'] = summary['subject_id'].apply(extract_accession)
-summary['uniprot_link'] = summary['uniprot_accession'].apply(
-    lambda x: f'https://www.uniprot.org/uniprot/{x}'
+summary["description"] = summary["description"].str.extract(r'^\S+\s(.+?)\sOS=')[0]
+#summary['uniprot_link'] = summary['uniprot_accession'].apply(
+#    lambda x: f'https://www.uniprot.org/uniprot/{x}'
+#)
+
+print(tabulate(summary, headers="keys", tablefmt="psql"))
+
+gt = (
+    GT(summary)
+    .tab_header(
+        title="Summary of GO:0016114 flagged genes.",
+        subtitle="GO:0016114 - Terpenoid Biosynthetic Process."
+    )
+    .cols_label(
+        subject_id="Uniprot Accession",
+        n_copies_in_gff="Number of copies",
+        avg_bit_score="Average bit score",
+        reference_species="Reference species",
+        description="Description",
+    )
+    .fmt_number(columns="avg_bit_score", decimals=0)
+    .data_color(
+        columns="avg_bit_score",
+        palette=["white", "lightblue"],
+        domain=[summary["avg_bit_score"].min(), summary["avg_bit_score"].max()],
+        na_color="lightgray",
+        autocolor_text=True,
+        reverse=False,
+    )
+    .data_color(
+        columns="n_copies_in_gff",
+        palette=["white", "lightblue"],
+        domain=[summary["n_copies_in_gff"].min(), summary["n_copies_in_gff"].max()],
+        autocolor_text=True,
+        reverse=False
+    )
+
+    .opt_table_font(font="Arial")
 )
 
-# Convert DataFrame to HTML (escape=False to keep the links active)
-html_table = summary.to_html(index=False, escape=True)
-
-# DataTables CSS + JS CDN links
-datatables_css = '<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>'
-datatables_js = '<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>' \
-                '<script type="text/javascript" src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>'
-
-# JavaScript to activate DataTables on our table
-datatables_init = """
-<script type="text/javascript">
-$(document).ready(function() {
-    $('table').DataTable({
-        "paging": true,
-        "searching": true,
-        "info": true
-    });
-});
-</script>
-"""
-
-# Full HTML page combining all parts
-html_page = f"""
-<html>
-<head>
-    <meta charset="utf-8" />
-    {datatables_css}
-</head>
-<body>
-    {html_table}
-    {datatables_js}
-    {datatables_init}
-</body>
-</html>
-"""
-
-# Save to file
-with open("../../plots/functional_annotation/non_core_GO0016114_summary_table.html", "w", encoding="utf-8") as f:
-    f.write(html_page)
+gt.show()
 

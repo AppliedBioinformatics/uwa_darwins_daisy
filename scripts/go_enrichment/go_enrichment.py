@@ -103,10 +103,12 @@ def plt_top_n_go_enriched_terms_by_namespace(df: pd.DataFrame, n: int = 15) -> p
         dodge=False
     )
 
-    plt.title(f"Top {n} Enriched GO Terms per Namespace (Absent Genes)")
-    plt.xlabel("-log10(FDR)")
-    plt.ylabel("GO Term")
-    plt.legend(title="GO Namespace")
+    plt.title(f"Top {n} Enriched GO Terms per Namespace (Absent Genes)", fontsize=18, pad=10)
+    plt.xlabel("-log10(FDR)", fontsize=18, labelpad=10)
+    plt.ylabel("GO Term", fontsize=18, labelpad=10)
+    plt.legend(title="GO Namespace", fontsize=18)
+    plt.tick_params(axis="x", labelsize=14)
+    plt.tick_params(axis="y", labelsize=14)
     plt.tight_layout()
     return plt.gcf()
 
@@ -120,9 +122,11 @@ def plt_go_bar(df: pd.DataFrame, top_n: int = 15, title=None) -> plt.Figure:
         palette="viridis",
         ax=ax
     )
-    ax.set_xlabel("-log10(FDR)")
-    ax.set_ylabel("GO Term")
-    ax.set_title(title or f"Top {top_n} Enriched GO Terms")
+    ax.set_xlabel("-log10(FDR)", fontsize=18, labelpad=10)
+    ax.set_ylabel("GO Term", fontsize=18, labelpad=10)
+    ax.set_title(title or f"Top {top_n} Enriched GO Terms", fontsize=18, pad=15)
+    ax.tick_params(axis="x", labelsize=14)
+    ax.tick_params(axis="y", labelsize=14)
     plt.tight_layout()
     return fig
 
