@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH --job-name=maker_run1
+#SBATCH --partition=work
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=128
+#SBATCH --mem=230G               
+#SBATCH --time=24:00:00
+#SBATCH --output=maker_run1_%j.out
+#SBATCH --error=maker_run1_%j.err
+#SBATCH --mail-user=jack.bruton@uwa.edu.au
+#SBATCH --mail-type=END
+
+# Load Singularity
+module load singularity/4.1.0-nompi
+
+SING_IMG=/scratch/pawsey0149/jbruton/daisy_pangenome/250807_maker_annotation/maker_run/maker_latest.sif
+WORKDIR=/scratch/pawsey0149/jbruton/daisy_pangenome/250807_maker_annotation/maker_run
+
+# Run maker.
+singularity exec $SING_IMG \
+    maker \
+    -base run1 \
+    --ignore_nfs_tmp \
+    -fix_nucleotides \
+    maker_opts.ctl \
+    maker_bopts.ctl \
+    maker_exe.ctl > maker_run1.log 2>&1 && echo "MAKER run completed"
+
+echo "MAKER run completed"
