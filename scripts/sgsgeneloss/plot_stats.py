@@ -67,17 +67,25 @@ def plt_pct_total_genes_lost_hist(raw_df: pd.DataFrame, nbins: Optional[int] = 5
     df = raw_df.copy()
     df["pct_genes_lost"] = (df["Total_number_of_genes_lost"] / df["Total_number_of_genes"]) * 100
 
-    fig = px.histogram(df,
-                       x="pct_genes_lost",
-                       nbins=nbins,
-                       title=f"Percentage of Genes Lost ({df['Total_number_of_genes'].max()}).",
-                       labels={"percent_genes_lost": "Percentage of Genes Lost"},
-                       )
+    fig = px.histogram(
+        df,
+        x="pct_genes_lost",
+        nbins=nbins,
+        title=f"Percentage of Features Lost",
+        labels={"pct_genes_lost": "Percentage of Features Lost"},
+    )
 
+    # Update layout for publication-quality styling
     fig.update_layout(
-        xaxis_title="% Genes Lost",
-        yaxis_title=f"Number of Samples ({len(df)}).",
-        bargap=0.1
+        xaxis_title="Features Lost (%)",
+        yaxis_title=f"Number of Samples (n={len(df)})",
+        xaxis_tickfont=dict(size=14),
+        yaxis_tickfont=dict(size=14),
+        title_font=dict(size=22),
+        xaxis_title_font=dict(size=18),
+        yaxis_title_font=dict(size=18),
+        bargap=0.1,
+        hoverlabel=dict(font_size=14)
     )
 
     return fig
@@ -206,27 +214,46 @@ def plt_pav_matrix_pca(pav_df: pd.DataFrame) -> go.Figure:
     return fig
 
 def plt_presence_v_coverage(pav_df: pd.DataFrame, cov_df: pd.DataFrame) -> go.Figure:
-    assert (pav_df.index == cov_df.index).all()
+    if not (pav_df.index == cov_df.index).all():
+        raise ValueError("Feature indices of presence-absence and coverage matrices do not match.")
 
-    # Create summary dataframe.
+        # Summarize per-sample metrics
     summary_df = pd.DataFrame({
         "sample": pav_df.columns,
-        "num_present_genes": pav_df.sum(),
+        "num_present_features": pav_df.sum(),
         "average_read_depth": cov_df.mean()
     })
 
+    # Create scatter plot
     fig = px.scatter(
         summary_df,
-        x="num_present_genes",
+        x="num_present_features",
         y="average_read_depth",
         hover_name="sample",
-        title="Genes Present vs. Average read depth",
-        labels={"average_read_depth": "Average Read Depth",
-                "num_present_genes": "Number of Present Genes (Log10)"
-                },
+        title="Feature Presence vs. Average Read Depth per Sample",
+        labels={
+            "num_present_features": "Number of Present Features (mincov = 0.05)",
+            "average_read_depth": "Average Read Depth"
+        },
+        size_max=15  # maximum marker size
     )
 
-    return fig.update_xaxes(type="log")
+    # Update layout for publication-quality styling
+    fig.update_traces(marker=dict(size=12, color='blue', opacity=0.7), selector=dict(mode='markers'))
+    fig.update_layout(
+        title_font=dict(size=22),
+        xaxis_title_font=dict(size=18),
+        yaxis_title_font=dict(size=18),
+        xaxis_tickfont=dict(size=14),
+        yaxis_tickfont=dict(size=14),
+        legend_font=dict(size=14),
+        hoverlabel=dict(font_size=14)
+    )
+
+    # Set x-axis to logarithmic scale
+    fig.update_xaxes(type="log")
+
+    return fig
 
 def plt_core_gene_length_box(len_df: pd.DataFrame, core_gene_list: List[str]) -> go.Figure:
     """Creates a box plot to visualise the gene sizes of genes present in all samples (core genes)."""
@@ -239,19 +266,32 @@ def plt_core_gene_length_box(len_df: pd.DataFrame, core_gene_list: List[str]) ->
         y="length",
         log_y=True,
         color="is_core",
-        title="Core vs Non-core Gene Length.",
-        labels={"is_core": "Feature set", "length": "Feature Length (BP)"},
+        title="Core vs Non-core Feature Length",
+        labels={"is_core": "Feature Set", "length": "Feature Length (bp)"},
         points="all",
-
     )
 
+    # Show mean as a line
     fig.update_traces(boxmean=True)
+
+    # Custom x-axis labels with counts
     fig.update_xaxes(
         tickvals=[True, False],
         ticktext=[
-            f"Core Genes (n={df['is_core'].sum()})",
-            f"Non-Core Genes (n={(~df['is_core']).sum()})"
-        ]
+            f"Core Features (n={df['is_core'].sum()})",
+            f"Non-Core Features (n={(~df['is_core']).sum()})"
+        ],
+        tickfont=dict(size=14)
+    )
+
+    # Update layout for larger text and remove legend
+    fig.update_layout(
+        title_font=dict(size=22),
+        xaxis_title_font=dict(size=18),
+        yaxis_title_font=dict(size=18),
+        yaxis_tickfont=dict(size=14),
+        hoverlabel=dict(font_size=14),
+        showlegend=False
     )
 
     return fig
@@ -295,7 +335,7 @@ def build_report(fig_list: List[go.Figure], outfile: str) -> None:
 if __name__ == "__main__":
 
     # Settings.
-    pio.templates.default = "plotly_dark"
+    pio.templates.default = "plotly_white"
 
     # Build .stats dataframe.
     stats_files =find_all_files(Path("../../SGSGL_results/"), file_type=".txt")
@@ -316,14 +356,16 @@ if __name__ == "__main__":
     cov_df = pd.read_csv("../../data/sgsgeneloss/cov_matrix.csv", index_col=0)
 
     # Call functions and generate report.
-    figs = [plt_total_genes_lost_hist(raw_df),
-            plt_pct_total_genes_lost_hist(raw_df),
-            plt_total_read_count_v_number_present_genes(raw_df),
-            plt_genes_lost_avg_gene_length_sct(raw_df),
-            plt_lost_vs_present_avg_gene_length_box(raw_df),
-            plt_lost_gene_sizes_box(raw_df),
-            plt_pav_matrix_pca(pav_df),
-            plt_presence_v_coverage(pav_df, cov_df),
-            plt_core_gene_length_box(len_df, core_gene_list)]
+    #figs = [plt_total_genes_lost_hist(raw_df),
+    #        plt_pct_total_genes_lost_hist(raw_df),
+    #        plt_total_read_count_v_number_present_genes(raw_df),
+    #        plt_genes_lost_avg_gene_length_sct(raw_df),
+    #        plt_lost_vs_present_avg_gene_length_box(raw_df),
+    #        plt_lost_gene_sizes_box(raw_df),
+    #        plt_pav_matrix_pca(pav_df),
+    #        plt_presence_v_coverage(pav_df, cov_df),
+    #        plt_core_gene_length_box(len_df, core_gene_list)]
 
-    build_report(figs, "../../reports/sgsgeneloss_report.html")
+    #build_report(figs, "../../reports/sgsgeneloss_report.html")
+
+    plt_pct_total_genes_lost_hist(raw_df).show()

@@ -23,7 +23,6 @@ GO_TERMS = [
 PAV_FILE = Path("../../data/sgsgeneloss/pav_matrix.csv")
 DMND_FILE = Path("../../data/functional_annotation/noncore_go_merged_diamond_results_uniprot.csv")
 META_FILE = Path("../../metadata/raw_sample_metadata.xlsx")
-
 ORIGIN = (-0.252, -90.718)  # Santiago
 
 def load_data():
@@ -40,7 +39,7 @@ def filter_dmnd_by_go_terms(dmnd_df, go_terms):
     dmnd_df["go_terms"] = dmnd_df["go_terms"].apply(ast.literal_eval)
 
     # Uncomment below to filter by GO terms if needed:
-    #dmnd_df = dmnd_df[dmnd_df["go_terms"].apply(lambda x: any(term in go_terms for term in x))]
+    dmnd_df = dmnd_df[dmnd_df["go_terms"].apply(lambda x: any(term in go_terms for term in x))]
     return dmnd_df
 
 def filter_pav_by_dmnd(pav_df, dmnd_df):
@@ -116,7 +115,7 @@ def main():
     pav_df_filtered = filter_pav_by_dmnd(pav_df, dmnd_df_filtered)
     merged_df = merge_with_metadata(pav_df_filtered, meta_df)
     merged_df = add_distance_column(merged_df, ORIGIN)
-    plot_gene_count_vs_distance(merged_df)
+    plot_gene_count_vs_distance(merged_df).show()
     run_regression_analysis(merged_df)
 
 if __name__ == "__main__":

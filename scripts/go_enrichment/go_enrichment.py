@@ -152,21 +152,21 @@ if __name__ == "__main__":
     results = goea.run_study(study_genes)
     results_df = get_enrichment_results_df(results)
     sig_df = results_df[results_df["p_fdr_bh"] < 0.01].copy()
-    sig_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results.csv", index=False)
+    #sig_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results.csv", index=False)
 
     # Filter for overrepresented and underrepresented genes.
     over_df = sig_df[sig_df['enrichment'] == 'e'].copy()
-    over_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results_overrep.csv", index=False)
+    #over_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results_overrep.csv", index=False)
     under_df = sig_df[sig_df['enrichment'] == 'p'].copy()
-    under_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results_underrep.csv", index=False)
+    #under_df.to_csv(DATA_FOLDER / "goatools_go_enrichment_results_underrep.csv", index=False)
 
     # Format for visualisation
-    over_df["-log10(FDR)"] = -np.log10(sig_df["p_fdr_bh"])
-    over_df["short_name"] = over_df["name"].apply(lambda x: x if len(x) < 40 else x[:37] + "...")
-    over_df = over_df.sort_values("-log10(FDR)", ascending=False)
+    under_df["-log10(FDR)"] = -np.log10(sig_df["p_fdr_bh"])
+    under_df["short_name"] = under_df["name"].apply(lambda x: x if len(x) < 40 else x[:37] + "...")
+    under_df = under_df.sort_values("-log10(FDR)", ascending=False)
 
     # Publication plot.
-    fig = plt_go_bar(over_df, top_n=20)
-    fig.savefig("../../plots/go_enrichment/goatools_go_enrichment_results_overrep_top20.png")
-    fig = plt_top_n_go_enriched_terms_by_namespace(over_df, n=10)
-    fig.savefig("../../plots/go_enrichment/goatools_go_enrichment_results_overrep_top10_ns.png")
+    fig = plt_go_bar(under_df, top_n=20)
+    fig.savefig("../../plots/go_enrichment/goatools_go_enrichment_results_underrep_top20.png")
+    fig = plt_top_n_go_enriched_terms_by_namespace(under_df, n=10)
+    fig.savefig("../../plots/go_enrichment/goatools_go_enrichment_results_underrep_top10_ns.png")

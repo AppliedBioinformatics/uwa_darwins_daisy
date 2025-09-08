@@ -139,3 +139,6 @@ correlated with number of absent features for each sample.
 # Discussion.
 * Not all samples similar feature abcence profiles with individuals of the same or neighboring islands - Santiago sample etc.
 What might cause this - back population?
+
+Note this was initial notes I made for the paper. The latest paper draft is located under the following directory:
+`Complete`

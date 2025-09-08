@@ -13,7 +13,7 @@
 REFERENCE="scalesia_atractyloides.reference.fasta.gz"      # Reference genome (FASTA)
 QUERY="filtered.genome.scf.fasta"              # Input reads (FASTQ or FASTA)
 OUTPUT="raw_pangenome.bam"        	       # Output BAM file
-PRESET="map-ont"                      	       # Preset: map-ont (ONT), map-pb (PacBio), asm5, asm10, etc.
+PRESET="sr"                      	       # Preset: map-ont (ONT), map-pb (PacBio), asm5, asm10, etc.
 EXTRA_OPTS=""                         	       # Any extra minimap2 options
 STATS="alignment.stats.txt"    		       # Alignment statistics output file
 UNMAPPED="unmapped_reads.fasta"   	       # Output file for unmapped reads

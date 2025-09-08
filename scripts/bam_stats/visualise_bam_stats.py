@@ -66,8 +66,8 @@ def build_pct_mapped_bar_plot(df: pd.DataFrame) -> px.bar:
         x='file',
         y='percent_reads_mapped',
         title='Percentage of Reads Mapped per Sample',
-        labels={'file': 'Sample', 'percent_mapped': 'Mapped (%)'},
-        template='plotly_dark'
+        labels={'file': 'Sample', 'percent_reads_mapped': 'Percent of reads mapped (%)'},
+        template='simple_white'
     )
 
     fig.update_layout(yaxis_range=[90, 100])
@@ -76,7 +76,8 @@ def build_pct_mapped_bar_plot(df: pd.DataFrame) -> px.bar:
 def build_pct_mapped_box_plot(df: pd.DataFrame) -> px.box:
     """Build a plot showing the distribution of mapped reads per sample in a pandas dataframe."""
 
-    fig = px.box(df, y='percent_reads_mapped', title='Distribution of % Reads Mapped', template='plotly_dark')
+    fig = px.box(df, y='percent_reads_mapped', title='Distribution of Reads Mapped (%)', template='simple_white',
+                 labels={'percent_reads_mapped': 'Reads mapped (%)'})
     return fig
 
 def build_pct_mapped_hist_plot(df: pd.DataFrame) -> px.histogram:
@@ -86,9 +87,11 @@ def build_pct_mapped_hist_plot(df: pd.DataFrame) -> px.histogram:
         x='percent_reads_mapped',
         nbins=20,
         title='Distribution of % Reads Mapped',
-        labels={'percent_reads_mapped': 'Mapped (%)', "count": "Number of samples."},
-        template='plotly_dark'
+        labels={'percent_reads_mapped': 'Percent of reads mapped (%)'},
+        template='simple_white'
     )
+
+    fig.update_layout(yaxis_title="Count")
 
     return fig
 
@@ -99,10 +102,10 @@ def build_total_mapped_reads_plot(df: pd.DataFrame) -> px.bar:
     )
 
     fig.update_layout(title="Total Reads/Total Reads mapped.",
-                      xaxis_title="Sample",
+                      xaxis_title="Sample ID",
                       yaxis_title="Read Count",
                       barmode="group",
-                      template = 'plotly_dark'
+                      template = 'simple_white'
                       )
 
     return fig
@@ -148,14 +151,10 @@ if __name__ == "__main__":
     df["percent_reads_mapped"] = df["reads_mapped"] / df["sequences"] * 100
 
     # Build figs.
-    figs = [
-        build_pct_mapped_bar_plot(df),
-        build_pct_mapped_box_plot(df),
-        build_pct_mapped_hist_plot(df),
-        build_total_mapped_reads_plot(df),
-    ]
-
-    build_report(figs, "../../reports/alignment_summary_report.html")
+    build_pct_mapped_hist_plot(df).show()
+    build_pct_mapped_bar_plot(df).show()
+    build_total_mapped_reads_plot(df).show()
+    build_pct_mapped_box_plot(df).show()
 
 
 

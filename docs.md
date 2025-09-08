@@ -12,7 +12,13 @@
 - [GO enrichment analysis](#go-enrichment-analysis-14072025---15072025)
 - [Running masurca](#running-masurca-on-unmapped-reads-16072025--21072025)
 - [Masurca QC and filtering](#masurca-run-quality-control-22072025)
-- [Remapping of masurca assembly with minimap](#alignment-of-filtered-masurca-assembly-to-the-reference-genome-23072025)
+- [Remapping of masurca assembly with minimap](#alignment-of-filtered-masurca-assembly-to-the-reference-genome-23072025---29072025)
+- [Further presence/abcence analysis](#further-presence-absence-variation-analysis-24072025)
+- [PAV comparison with mainland species (didn't work)](#pav-comparison-with-a-mainland-species)
+- [Phylogenetic analysis using PAV matrix (NJ-tree)](#phylogenetic-analysis-using-pav-matrix-05082025)
+- [Repeat-masker Maker preparation](#running-repeat-modeler--repeatmasker-to-define-repeated-regions-of-the-pan-genome)
+- [Maker structural annotation](#running-maker-to-annotate-filtered-masurca-assembly-07082025)
+- [Notes for handover]
 
 ---
 
@@ -455,7 +461,7 @@ dataset. The results for this analysis are below:
 ![Go Non-core gene subset](/plots/go_enrichment/ncore_15_enrch_go_v_distance_frm_santiago.png)
 Both a standard linear regression and GLM (Poisson Model) showed a significant negative correlation between distance 
 from Santiago and the number of genes belonging to the top 15 most enriched GO terms within the non-core dataset. I will
-need to interpret this result to try to explain why the subset shows a greater correllation compared to the whole 
+need to interpret this result to try to explain why the subset shows a greater correlation compared to the whole 
 non-core gene set. Below are the results of the statistical tests for the non-core GO subset used to generate the 
 figure
 
@@ -567,26 +573,7 @@ Mitch also generated a MASH plot using the `mashtree` package. The .nwk file is 
 There are some similarities between the two trees. I used the `ete3` package to plot the two trees side-by-side for 
 comparison using this [script](/scripts/sgsgeneloss/compare_pav_trees.py).
 
-## Running maker to annotate filtered masurca assembly (07/08/2025).
-In order to run maker to annotate the assembly produced by masurca I will need some protein data that can be used by
-maker to inform the annotation. For the first round I will use the following databases;
-
-* Helianthus annus - Common sunflower (model organism in daisy family). I downloaded the proteome from this reference 
-accession on [NCBI (refseq)](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002127325.2/) as well as the mRNA data.
-
-* Arabdiposis thaliana - A very well studied plant model organism. Not in the Diasy family but will have extended
-annotation. I downloaded the proteome and mRNA data from this 
-[NCBI link](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001735.4/) I used the GenBank accession file 
-`GCA_000001735.2` (Arabidopsis) and `GCA_002127325.2` (Helianthus).
-
-* The protein data from the scalasia reference genome available. (mRNA data was not available) 
-[here](https://datadryad.org/dataset/doi:10.5061/dryad.8gtht76rh)
-
-I may add this in a future round:
-* A more general collection of reviewed plant proteins from all Streptophyta species from UniProt:
-[Uniprot query](https://www.uniprot.org/uniprotkb?query=%28taxonomy_id%3A35493%29&facets=reviewed%3Atrue)
-
-### Running Repeat-modeler + RepeatMasker to define repeated regions of the pan genome.
+## Running Repeat-modeler + RepeatMasker to define repeated regions of the pan genome.
 Before running Maker, I need to mask repeated regions of the genome using these two software. To do this I used the code
 snippet below after installing the two software's using `conda`:
 
@@ -598,19 +585,48 @@ RepeatMasker -pa 64 -lib consensi.fa.classified -dir repeatmasker_out -a final_p
 ```
 I then concatenated all files for the protein and all files for the mRNA datasets to use for the `maker` and used
 the soft masked version of the .fasta file as the input for maker the soft masked file is saved [here]()
-
 I then used this script and these config files to run [maker round 1](/scripts/maker_round_1)
 
-## Generating Maximum likelihood tree using SNP's (11/08/2025).
-In order to really understand the migration patterns, I need to check to see how the species compare to each other 
-evolutionarily using a maximum likelihood tree. This will confirm if we are seeing back-migration through the 
-PAV matrix. In order to generate a maximum likelihood tree, I used the following process:
+## Running maker to annotate filtered masurca assembly (07/08/2025).
+In order to run maker to annotate the assembly produced by masurca I will need some protein data that can be used by
+maker to inform the annotation. For the first round I will use the following databases;
 
-I first generated a list of sorted `.bam` files for each of the 34 samples using this [script](/script/ml_tree/). I
-then used the following code snippets to generate a .vcf file containing high quality SNP's for each sample that can be
-used to build the tree.
+* Helianthus annus - Common sunflower (model organism in daisy family). I downloaded the proteome from this reference 
+accession on [NCBI (refseq)](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_002127325.2/) as well as the mRNA data.
 
-```bash
-bcftools mpileup -Ou -f ../000000_dd_reference/scalesia_atractyloides.reference.fasta \
--b sortedbamlist.txt -q 20 -Q 20 -C 50 -a FORMAT/DP,AD --threads 32 > ../250811_ml_tree/raw.bcf
-```
+* Arabdiposis thaliana - A very well studied plant model organism. Not in the Diasy family but will have extended
+annotation. I downloaded the proteome and mRNA data from this 
+[NCBI link](https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001735.4/)
+
+I used the GenBank accession file`GCA_000001735.2` (Arabidopsis) and `GCA_002127325.2` (Helianthus).
+
+* The protein data from the scalasia reference genome available. (mRNA data was not available) 
+[here](https://datadryad.org/dataset/doi:10.5061/dryad.8gtht76rh)
+
+I may add this in a future round:
+* A more general collection of reviewed plant proteins from all Streptophyta species from UniProt:
+[Uniprot query](https://www.uniprot.org/uniprotkb?query=%28taxonomy_id%3A35493%29&facets=reviewed%3Atrue)
+
+### Update 08/09/2025.
+The initial maker run (1) finished. I tried to generate the GFF file but was getting an error on chromosome 28.
+I have backed up the pre-edited index in pshell, deleted the lines for chromosome 28 from the index file and rerun 
+the maker run to try to fix whatever went wrong with Chr28. Annotation files and other relevant maker files are 
+all stored in pshell under the directory `NGS Analysis Results/rawdata/Darwins_daisy/maker_run/jb`.
+
+## Notes for handover of the project (08/09/2025).
+A few notes for handover of the project in between my contracts. The latest version of the manuscript has been sent to 
+Dave for feedback. I have drafted all the sections but some work will need doing to review figures and refine the 
+results sections and add in the final results section once MAKER has completed.
+
+At the moment maker has just finished round one. The next step will be to re-run with ab initio gene predictors such 
+as snap. The initial maker run did take a long time. Depending on how long it is taking for run 2 we may need to remove
+some of the protein/mRNA evidence to speed the process up. I would start by removing the Arabidopsis proteins/mRNA 
+datasets from the reference data maybe?
+
+The manuscript is currently with Dave for review. The version I have sent to him is saved here:
+I generated most of the figures using Canva. If any of these need work then I should be able to add you to the canva 
+project. This means that you shouldn't need to rerun scripts etc. Hopefully everything is documented if you need to go 
+back and re-run outputs. There may be a few experimental scripts that I forgot to delete etc. Anything you can't find
+let me know and I can add to the docs and upload to the GitHub.
+
+
