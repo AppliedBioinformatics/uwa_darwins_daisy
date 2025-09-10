@@ -145,7 +145,7 @@ venv.bak/
 
 # mkdocs documentation
 /site
-/SGSGL_results
+/data/sgsgeneloss/SGSGL_results
 # mypy
 .mypy_cache/
 .dmypy.json

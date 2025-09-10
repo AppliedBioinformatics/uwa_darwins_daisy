@@ -338,7 +338,7 @@ if __name__ == "__main__":
     pio.templates.default = "plotly_white"
 
     # Build .stats dataframe.
-    stats_files =find_all_files(Path("../../SGSGL_results/"), file_type=".txt")
+    stats_files =find_all_files(Path("../../data/sgsgeneloss/SGSGL_results/"), file_type=".txt")
     raw_df = build_stats_df(stats_files)
     raw_df["sample_id"] = raw_df["sample_id"].str.removesuffix("_merged.bam")
 
@@ -349,7 +349,7 @@ if __name__ == "__main__":
     core_gene_list = extract_present_subsample(pav_df=pav_df)
 
     # Build gene length dataframe.
-    len_df = build_gene_length_table(excov_file=Path("../../SGSGL_results/HALM12_19_merged_all.excov"))
+    len_df = build_gene_length_table(excov_file=Path("../../data/sgsgeneloss/SGSGL_results/HALM12_19_merged_all.excov"))
     len_df.to_csv("../../data/sgsgeneloss/gene_length_table.csv")
 
     # Build coverage dataframe.
