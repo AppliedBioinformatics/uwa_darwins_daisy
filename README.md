@@ -1,0 +1,1 @@
+Project folder for the Darwin's Daisy project. Contains scripts, data and manuscripts. Keep it private. After publishing, we can publish the repo as supplmentary and a reference point for all of the custom data analysis scripts.
