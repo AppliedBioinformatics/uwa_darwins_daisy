@@ -197,3 +197,4 @@ cython_debug/
 .idea/
 data/
 sgsgeneloss_results/
+scripts/maker_round_2/high_conf_genes.gff
