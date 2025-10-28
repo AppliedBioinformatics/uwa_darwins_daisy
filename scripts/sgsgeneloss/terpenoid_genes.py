@@ -6,14 +6,14 @@ import matplotlib.pyplot as plt
 import math
 import matplotlib.colors as mcolors
 import numpy as np
-
+from tabulate import tabulate
 from scripts.functional_annotation.combine_figures import grid_cols
 
 # Imports.
 DATA_FOLDER = Path("../../data/")
 NC_DATASET = DATA_FOLDER / "functional_annotation/noncore_go_merged_diamond_results_uniprot.csv"
-PAV_MATRIX = DATA_FOLDER / "sgsgeneloss/pav_matrix.csv"
-LOC_DATA = DATA_FOLDER / "sgsgeneloss/gene_length_table.csv"
+PAV_MATRIX = DATA_FOLDER / "sgsgeneloss_/pav_matrix.csv"
+LOC_DATA = DATA_FOLDER / "sgsgeneloss_/gene_length_table.csv"
 METADATA = Path("../../metadata/raw_sample_metadata.xlsx")
 
 
@@ -25,16 +25,51 @@ meta_df = pd.read_excel(METADATA, header=0, index_col=0)
 
 # Get indexes of GO term for "terpenoid biosynthesis" - GO:0016114
 go_terms_to_include = [
-    "GO:0016114",  # Terpenoid biosynthetic process
-    "GO:0008299",  # Isoprenoid biosynthetic process
-    "GO:0006721",  # Terpenoid metabolic process
-    "GO:0006720",  # Isoprenoid metabolic process
-    "GO:0120251",  # Hydrocarbon biosynthetic process
-    #"GO:0120252",  # Hydrocarbon metabolic process
-    #"GO:0006629",  # Lipid metabolic process
-    #"GO:0016102",  # Diterpenoid biosynthetic process
-    #"GO:0009699",  # Phenylpropanoid biosynthetic process
-    #"GO:0044550",  # Secondary metabolite biosynthetic process
+    "GO:0016114",
+    "GO:0008299",
+    "GO:0006721",
+    "GO:0006720",
+    "GO:0120251",
+    "GO:0120252",
+    "GO:0006629",
+    "GO:0016102",
+    "GO:0009699",
+    "GO:0044550",
+    "GO:0048544",
+    "GO:0016101",
+    "GO:0019748",
+    "GO:0008610",
+    "GO:0046246",
+    "GO:0008037",
+    "GO:0042214",
+    "GO:0009698",
+    "GO:0009805",
+    "GO:0031408",
+    "GO:0009804",
+    "GO:0006952",
+    "GO:0031407",
+    "GO:0005576",
+    "GO:0048046",
+    "GO:0004497",
+    "GO:0016491",
+    "GO:0046906",
+    "GO:0020037",
+    "GO:0005506",
+    "GO:0016705",
+    "GO:0003824",
+    "GO:0010333",
+    "GO:0016838",
+    "GO:0080043",
+    "GO:0030246",
+    "GO:0080044",
+    "GO:0106310",
+    "GO:0046527",
+    "GO:0003674",
+    "GO:0004674",
+    "GO:0035251",
+    "GO:0016712",
+    "GO:0004672",
+    "GO:0016709"
 ]
 pattern = "|".join(go_terms_to_include)
 
@@ -138,3 +173,32 @@ ax.set_xticklabels(ax.get_xticklabels(), fontsize=20)
 ax.set_yticklabels(ax.get_yticklabels(), fontsize=20)
 plt.tight_layout()
 plt.show()
+
+# Filter by GO then look at metadata associations.
+def plt_asccociation_habitat(pav_df: pd.DataFrame, meta_df: pd.DataFrame) -> None:
+    df = pav_df.copy()
+    meta_df = meta_df.copy()
+
+    # Calculate number of present genes per sample
+    df["n_present_genes"] = df.sum(axis=1)
+
+    # Merge with metadata to get habitat
+    merged_df = df.merge(meta_df[["Climate"]], left_index=True, right_index=True)
+
+    # Print mean number of present genes per habitat
+    mean_per_habitat = merged_df.groupby("Climate")["n_present_genes"].mean()
+    print("Average number of present genes per habitat:")
+    print(mean_per_habitat)
+
+    # Plot boxplot
+    plt.figure(figsize=(6, 4))
+    sns.boxplot(data=merged_df, x="Climate", y="n_present_genes")
+    sns.stripplot(data=merged_df, x="Climate", y="n_present_genes",
+                  color="black", alpha=0.5)
+    plt.ylabel("Number of Non-Core Genes Present")
+    plt.title("Gene Counts by Climate")
+    plt.show()
+
+
+sorted_pav_df.drop("start_position", inplace=True, axis=1)
+plt_asccociation_habitat(sorted_pav_df.T, meta_df)

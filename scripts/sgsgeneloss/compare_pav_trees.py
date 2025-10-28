@@ -30,8 +30,8 @@ ts2.layout_fn = layout
 ts2.title.add_face(faces.TextFace("Neighbor Joining Tree", fsize=20), column=0)
 
 # Render both trees side by side as images
-mash_png = "../../data/sgsgeneloss/mash_tree.png"
-nj_png = "../../data/sgsgeneloss/nj_tree.png"
+mash_png = "../../data/sgsgeneloss_/mash_tree.png"
+nj_png = "../../data/sgsgeneloss_/nj_tree.png"
 mash_tree.render(mash_png, tree_style=ts1, w=500)
 nj_tree.render(nj_png, tree_style=ts2, w=500)
 
@@ -46,4 +46,4 @@ axs[0].axis('off')
 axs[1].imshow(img2)
 axs[1].axis('off')
 plt.tight_layout()
-plt.savefig("../../data/sgsgeneloss/mash_v_nj_pav.png")
+plt.savefig("../../data/sgsgeneloss_/mash_v_nj_pav.png")

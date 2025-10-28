@@ -44,3 +44,16 @@ order = [
 ]
 
 ordered_pop_colors = {k: pop_colors[k] for k in order}
+
+island_colors = pop_colors = {
+    "Bartolomé": "#674ea7",
+    "Santiago": "#cc0000",
+    "Isabela": "#c27ba0",
+    "Pinzon": "#0b5394",
+    "Isla Eden": "#660000",
+    "Santa Cruz": "#6aa84f",
+    "Santa Fé": "#999999",
+    "Pinta": "#9fc5e8",
+    "San Cristóbal": "#f69035",
+    "Floreana": "#bbbc40"
+}

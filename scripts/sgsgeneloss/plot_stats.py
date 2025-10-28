@@ -350,7 +350,7 @@ if __name__ == "__main__":
 
     # Build gene length dataframe.
     len_df = build_gene_length_table(excov_file=Path("../../data/sgsgeneloss/SGSGL_results/HALM12_19_merged_all.excov"))
-    len_df.to_csv("../../data/sgsgeneloss/gene_length_table.csv")
+    len_df.to_csv("../../data/sgsgeneloss_/gene_length_table.csv")
 
     # Build coverage dataframe.
     cov_df = pd.read_csv("../../data/sgsgeneloss/cov_matrix.csv", index_col=0)

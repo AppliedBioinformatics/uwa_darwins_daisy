@@ -13,7 +13,7 @@ def match_similarity(u, v):
 
 # Load PAV.
 DATA_FOLDER = Path("../../data/")
-PAV_MATRIX = DATA_FOLDER / "sgsgeneloss/pav_matrix.csv"
+PAV_MATRIX = DATA_FOLDER / "sgsgeneloss_/pav_matrix.csv"
 
 # To pandas + filter + transpose
 pav_df = pd.read_csv(PAV_MATRIX, header=0, index_col=0)

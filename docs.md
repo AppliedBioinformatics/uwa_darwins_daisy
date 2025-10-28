@@ -629,4 +629,32 @@ project. This means that you shouldn't need to rerun scripts etc. Hopefully ever
 back and re-run outputs. There may be a few experimental scripts that I forgot to delete etc. Anything you can't find
 let me know and I can add to the docs and upload to the GitHub.
 
+## Maker round 1 fixing (15/10/2025).
+I have run into some problems with the maker round 1 deleting gff files so I have collected all .gff files for each 
+contig produced so far. I will separate the missing contigs into their own `.fasta` file and then rerun maker on the 
+remaining to complete the gff. Hopefully then when I move on to maker round 2 I will be able to complete it all on a 
+single gff, now that we have figured out how to run the concurrency faster.
+
+I am doing this work in a new directory in my scratch under folder `scratch/daisy_pangenome/251014_maker_run_redo`
+The file containing annotations for all the existing contigs is `maker_combined.gff`. 
+The file containing only the missing contigs is `missing_contigs.fasta`.
+
+I finally managed to get maker to complete all contigs and created a master .gff file containing a total of 
+86452 genes in the GFF file. The file is stored on pshell at ""
+
+## Maker round 2 (24/10/25).
+This round of maker will use ab initio gene predictors that will need to be trained. For this I will need to extract 
+high confidence protein models from the round_1.gff. To do this I ran the command;
+
+`singularity run ../../251014_maker_run_redo/maker_run/maker_latest.sif maker2zff -x 0.25 -l 50 maker_round1_all.gff`
+
+On the round1_merged gff file to extract high-confidence hits for use in the training dataset. This extracted MRNAs 
+with an _AED score < 0.25 and a length over fifty base pairs. I then used this file to build the training files
+required for SNAP using the following commands:
+
+
+
+
+
+
 

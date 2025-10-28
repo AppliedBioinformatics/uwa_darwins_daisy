@@ -93,11 +93,11 @@ def create_coverage_matrix(infolder:str) -> pd.DataFrame:
     return coverage_matrix
 
 if __name__ == "__main__":
-    merge_excovs_for_sample_set(master_folder=r"../../data/sgsgeneloss/250408_mainland_species/run_2/mainland_yacon", outdir_folder="../../data/sgsgeneloss/250408_mainland_species/run_2/mainland_yacon_merged")
-    pav_df = create_pav_matrix(infolder="../../data/sgsgeneloss/250408_mainland_species/run_2/mainland_yacon_merged")
-    pav_df.to_csv("../../data/sgsgeneloss/250408_mainland_species/run_2/mainland_pav_matrix.csv", index=True)
+    merge_excovs_for_sample_set(master_folder=r"../../data/sgsgeneloss_/250408_mainland_species/run_2/mainland_yacon", outdir_folder="../../data/sgsgeneloss_/250408_mainland_species/run_2/mainland_yacon_merged")
+    pav_df = create_pav_matrix(infolder="../../data/sgsgeneloss_/250408_mainland_species/run_2/mainland_yacon_merged")
+    pav_df.to_csv("../../data/sgsgeneloss_/250408_mainland_species/run_2/mainland_pav_matrix.csv", index=True)
     # Create coverage matrix.
-    cov_df = create_coverage_matrix(infolder="../../data/sgsgeneloss/250408_mainland_species/run_2/mainland_yacon_merged")
-    cov_df.to_csv("../../data/sgsgeneloss/250408_mainland_species/run_2/mainland_cov_matrix.csv", index=True)
+    cov_df = create_coverage_matrix(infolder="../../data/sgsgeneloss_/250408_mainland_species/run_2/mainland_yacon_merged")
+    cov_df.to_csv("../../data/sgsgeneloss_/250408_mainland_species/run_2/mainland_cov_matrix.csv", index=True)
 
 

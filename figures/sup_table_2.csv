@@ -1,0 +1,46 @@
+GO:ID,GO:Name,GO:Namespace,p_uncorrected,p_fdr_bh
+GO:0016114,terpenoid biosynthetic process,BP,9.15E-11,7.64E-08
+GO:0008299,isoprenoid biosynthetic process,BP,1.66E-10,1.29E-07
+GO:0006721,terpenoid metabolic process,BP,2.09E-09,1.36E-06
+GO:0006720,isoprenoid metabolic process,BP,2.58E-09,1.56E-06
+GO:0120251,hydrocarbon biosynthetic process,BP,3.37E-08,1.74E-05
+GO:0120252,hydrocarbon metabolic process,BP,8.91E-08,3.92E-05
+GO:0006629,lipid metabolic process,BP,9.03E-08,3.92E-05
+GO:0016102,diterpenoid biosynthetic process,BP,1.73E-07,6.81E-05
+GO:0009699,phenylpropanoid biosynthetic process,BP,2.77E-07,9.10E-05
+GO:0044550,secondary metabolite biosynthetic process,BP,6.67E-07,0.000212917
+GO:0048544,recognition of pollen,BP,8.12E-07,0.000248674
+GO:0016101,diterpenoid metabolic process,BP,9.65E-07,0.000282904
+GO:0019748,secondary metabolic process,BP,1.53E-06,0.000430217
+GO:0008610,lipid biosynthetic process,BP,1.58E-06,0.000430217
+GO:0046246,terpene biosynthetic process,BP,1.65E-06,0.000430217
+GO:0008037,cell recognition,BP,2.06E-06,0.0005075
+GO:0042214,terpene metabolic process,BP,2.67E-06,0.000628978
+GO:0009698,phenylpropanoid metabolic process,BP,2.87E-06,0.000642557
+GO:0009805,coumarin biosynthetic process,BP,2.45E-05,0.004021181
+GO:0031408,oxylipin biosynthetic process,BP,2.68E-05,0.004332846
+GO:0009804,coumarin metabolic process,BP,4.07E-05,0.006135285
+GO:0006952,defense response,BP,4.52E-05,0.00662944
+GO:0031407,oxylipin metabolic process,BP,5.69E-05,0.008121383
+GO:0005576,extracellular region,CC,3.83E-08,1.89E-05
+GO:0048046,apoplast,CC,3.58E-05,0.005633635
+GO:0004497,monooxygenase activity,MF,2.41E-20,8.71E-17
+GO:0016491,oxidoreductase activity,MF,1.29E-19,3.23E-16
+GO:0046906,tetrapyrrole binding,MF,3.80E-19,6.88E-16
+GO:0020037,heme binding,MF,2.08E-18,2.82E-15
+GO:0005506,iron ion binding,MF,5.20E-18,6.26E-15
+GO:0016705,"oxidoreductase activity, acting on paired donors, with incorporation or reduction of molecular oxygen",MF,6.38E-18,6.92E-15
+GO:0003824,catalytic activity,MF,5.21E-12,4.71E-09
+GO:0010333,terpene synthase activity,MF,1.63E-07,6.81E-05
+GO:0016838,"carbon-oxygen lyase activity, acting on phosphates",MF,1.95E-07,7.31E-05
+GO:0080043,quercetin 3-O-glucosyltransferase activity,MF,2.12E-07,7.41E-05
+GO:0030246,carbohydrate binding,MF,2.57E-07,8.70E-05
+GO:0080044,quercetin 7-O-glucosyltransferase activity,MF,8.25E-07,0.000248674
+GO:0106310,protein serine kinase activity,MF,2.90E-06,0.000642557
+GO:0046527,glucosyltransferase activity,MF,3.09E-06,0.000671436
+GO:0003674,molecular_function,MF,3.35E-06,0.0007129
+GO:0004674,protein serine/threonine kinase activity,MF,9.47E-06,0.001834388
+GO:0035251,UDP-glucosyltransferase activity,MF,1.23E-05,0.002298061
+GO:0016712,"oxidoreductase activity, acting on paired donors, with incorporation or reduction of molecular oxygen…",MF,2.06E-05,0.003547959
+GO:0004672,protein kinase activity,MF,2.18E-05,0.003689941
+GO:0016709,"oxidoreductase activity, acting on paired donors, with incorporation or reduction of molecular oxygen…",MF,2.33E-05,0.003890304

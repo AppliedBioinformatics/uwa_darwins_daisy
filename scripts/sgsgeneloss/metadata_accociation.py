@@ -2,9 +2,11 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import Optional, Dict
-from umap import UMAP
 from pathlib import Path
-from scripts.sgsgeneloss.popcolors import pop_colors # (change this to load the python dict of colors - or with __init__
+from scipy.stats import ttest_ind, mannwhitneyu
+from scripts.sgsgeneloss.popcolors import island_colors # (change this to load the python dict of colors - or with __init__
+from tabulate import tabulate
+from umap import UMAP
 
 # Load data/metadata.
 pav_df = pd.read_csv("../../data/sgsgeneloss/pav_matrix.csv", index_col=0, header=0)
@@ -19,15 +21,15 @@ meta_df = meta_df.loc[meta_df.index.intersection(pav_df_t.index)]
 # Some plots to show association of samples between islands:
 def plt_island_umap(pav_df_t: pd.DataFrame, meta_df: pd.DataFrame, outfile: Optional[str] = None):
     # Fit UMAP on binary PAV data using Jaccard distance
-    umap_model = UMAP(n_components=2, random_state=42, metric="jaccard")
+    umap_model = UMAP(n_components=15, random_state=42, metric="hamming")
     umap_coords = umap_model.fit_transform(pav_df_t)
 
     # Create UMAP dataframe for plotting
     umap_df = pd.DataFrame(umap_coords, columns=["UMAP1", "UMAP2"], index=meta_df.index)
-    umap_df["Island"] = meta_df["Island"]
+    umap_df["species"] = meta_df["species"]
 
     # Assign consistent colors to islands
-    islands = umap_df["Island"].unique()
+    islands = umap_df["species"].unique()
     colors = plt.cm.tab10.colors  # or use another colormap like plt.cm.Set2.colors
     color_map = {island: colors[i % len(colors)] for i, island in enumerate(islands)}
 
@@ -35,7 +37,7 @@ def plt_island_umap(pav_df_t: pd.DataFrame, meta_df: pd.DataFrame, outfile: Opti
     fig, ax = plt.subplots(figsize=(8, 6))
 
     for island in islands:
-        subset = umap_df[umap_df["Island"] == island]
+        subset = umap_df[umap_df["species"] == island]
         ax.scatter(
             subset["UMAP1"],
             subset["UMAP2"],
@@ -51,7 +53,7 @@ def plt_island_umap(pav_df_t: pd.DataFrame, meta_df: pd.DataFrame, outfile: Opti
     ax.set_xlabel("UMAP1")
     ax.set_ylabel("UMAP2")
     ax.grid(True, linestyle='--', linewidth=0.5, color='lightgray')
-    ax.legend(title="Island", loc='center left', bbox_to_anchor=(1.02, 0.5))
+    ax.legend(title="species", loc='center left', bbox_to_anchor=(1.02, 0.5))
     plt.tight_layout()
 
     if outfile:
@@ -258,5 +260,6 @@ def plt_umap_with_color(pav_df_t: pd.DataFrame, pop_colors: Dict[str, str], outf
     return plt
 
 if __name__ == "__main__":
-    plt_island_umap_3_dims(pav_df_t=pav_df_t, pop_colors=pop_colors).show()
-    plt_umap_with_color(pav_df_t=pav_df_t, pop_colors=pop_colors).show()
+    from sgsgeneloss_.pav_umap import plt_2d_umap
+    plt = plt_2d_umap(pav_df, meta_df, associate_column="Climate")
+    plt.show()
